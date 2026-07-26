@@ -14,6 +14,8 @@ const _bayer = [
   [0.9375, 0.4375, 0.8125, 0.3125],
 ];
 
+double bayerAt(int x, int y) => _bayer[y & 3][x & 3];
+
 const cellSize = 2.0;
 const maxCols = 520;
 const maxRows = 200;

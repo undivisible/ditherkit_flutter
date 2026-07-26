@@ -11,5 +11,11 @@ void main() {
 
     await tester.scrollUntilVisible(find.text('Live signal'), 400);
     expect(find.text('Live signal'), findsOneWidget);
+
+    await tester.scrollUntilVisible(find.text('Polar charts'), 500);
+    expect(find.text('Polar charts'), findsOneWidget);
+
+    await tester.scrollUntilVisible(find.text('Standalone primitives'), 500);
+    expect(find.text('Standalone primitives'), findsOneWidget);
   });
 }

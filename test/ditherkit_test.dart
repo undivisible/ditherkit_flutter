@@ -108,4 +108,58 @@ void main() {
     expect(painter.reveal, 1);
     expect(painter.idlePhase, isNull);
   });
+
+  testWidgets('full chart family and standalone primitives paint', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: ListView(
+            children: const [
+              DitherCartesianChart(
+                data: [
+                  {'label': 'A', 'a': 2, 'b': 4},
+                  {'label': 'B', 'a': 5, 'b': 3},
+                ],
+                series: [
+                  DitherSeries(dataKey: 'a', color: DitherColor.blue),
+                  DitherSeries(dataKey: 'b', color: DitherColor.pink),
+                ],
+                kind: DitherChartKind.line,
+              ),
+              DitherPieChart(
+                data: [
+                  DitherPieSlice(name: 'A', value: 2, color: DitherColor.green),
+                  DitherPieSlice(
+                    name: 'B',
+                    value: 3,
+                    color: DitherColor.orange,
+                  ),
+                ],
+              ),
+              DitherRadarChart(
+                nameKey: 'label',
+                data: [
+                  {'label': 'A', 'a': 2, 'b': 4},
+                  {'label': 'B', 'a': 5, 'b': 3},
+                  {'label': 'C', 'a': 3, 'b': 6},
+                ],
+                series: [
+                  DitherSeries(dataKey: 'a', color: DitherColor.blue),
+                  DitherSeries(dataKey: 'b', color: DitherColor.pink),
+                ],
+              ),
+              DitherAvatar(name: 'test'),
+              DitherButton(onPressed: null, child: Text('Disabled')),
+            ],
+          ),
+        ),
+      ),
+    );
+    expect(find.byType(DitherPieChart), findsOneWidget);
+    expect(find.byType(DitherRadarChart), findsOneWidget);
+    expect(find.byType(DitherAvatar), findsOneWidget);
+    expect(find.byType(DitherButton), findsOneWidget);
+  });
 }

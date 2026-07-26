@@ -98,6 +98,126 @@ class DitherKitExamplePage extends StatelessWidget {
                     animate: true,
                   ),
                 ),
+                const SizedBox(height: 16),
+                _DitherPanel(
+                  title: 'Composable charts',
+                  kind: 'LINE / TOOLTIP / LEGEND',
+                  child: DitherCartesianChart(
+                    data: const [
+                      {'week': 'W1', 'desktop': 18, 'mobile': 11},
+                      {'week': 'W2', 'desktop': 34, 'mobile': 22},
+                      {'week': 'W3', 'desktop': 25, 'mobile': 31},
+                      {'week': 'W4', 'desktop': 49, 'mobile': 28},
+                      {'week': 'W5', 'desktop': 42, 'mobile': 44},
+                    ],
+                    series: const [
+                      DitherSeries(
+                        dataKey: 'desktop',
+                        color: DitherColor.blue,
+                        isClickable: true,
+                      ),
+                      DitherSeries(
+                        dataKey: 'mobile',
+                        color: DitherColor.pink,
+                        variant: DitherVariant.hatched,
+                        isClickable: true,
+                      ),
+                    ],
+                    kind: DitherChartKind.line,
+                    labelKey: 'week',
+                    showLegend: true,
+                    bloom: DitherBloom.low,
+                    referenceLine: const DitherReferenceLine(value: 30),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _DitherPanel(
+                  title: 'Polar charts',
+                  kind: 'PIE / RADAR',
+                  child: Column(
+                    children: const [
+                      DitherPieChart(
+                        height: 240,
+                        innerRadius: 0.52,
+                        data: [
+                          DitherPieSlice(
+                            name: 'build',
+                            value: 42,
+                            color: DitherColor.purple,
+                          ),
+                          DitherPieSlice(
+                            name: 'test',
+                            value: 29,
+                            color: DitherColor.green,
+                            variant: DitherVariant.dotted,
+                          ),
+                          DitherPieSlice(
+                            name: 'ship',
+                            value: 18,
+                            color: DitherColor.orange,
+                            variant: DitherVariant.hatched,
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 18),
+                      DitherRadarChart(
+                        height: 280,
+                        nameKey: 'skill',
+                        data: [
+                          {'skill': 'speed', 'core': 82, 'edge': 55},
+                          {'skill': 'clarity', 'core': 64, 'edge': 86},
+                          {'skill': 'reach', 'core': 75, 'edge': 48},
+                          {'skill': 'craft', 'core': 57, 'edge': 79},
+                          {'skill': 'care', 'core': 90, 'edge': 61},
+                        ],
+                        series: [
+                          DitherSeries(
+                            dataKey: 'core',
+                            color: DitherColor.blue,
+                          ),
+                          DitherSeries(
+                            dataKey: 'edge',
+                            color: DitherColor.pink,
+                            variant: DitherVariant.hatched,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _DitherPanel(
+                  title: 'Standalone primitives',
+                  kind: 'AVATAR / BUTTON / GRADIENT',
+                  child: SizedBox(
+                    height: 132,
+                    child: Stack(
+                      children: [
+                        const Positioned.fill(
+                          child: DitherGradient(
+                            from: DitherColor.purple,
+                            direction: DitherGradientDirection.up,
+                            opacity: 0.55,
+                          ),
+                        ),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Row(
+                            children: [
+                              const DitherAvatar(name: 'dither-kit', size: 72),
+                              const SizedBox(width: 16),
+                              DitherButton(
+                                color: DitherColor.green,
+                                onPressed: () {},
+                                child: const Text('Save changes'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
           ),

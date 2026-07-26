@@ -6,9 +6,20 @@ library;
 export 'src/charts/area_chart.dart'
     show DitherAreaChart, DitherAreaPainter, paintBarChart;
 export 'src/charts/bar_chart.dart' show DitherBarChart, DitherBarPainter;
+export 'src/charts/composable_charts.dart'
+    show
+        DitherChartKind,
+        DitherChartRow,
+        DitherCartesianChart,
+        DitherReferenceLine,
+        DitherSeries,
+        DitherStackType;
+export 'src/charts/polar_charts.dart'
+    show DitherPieChart, DitherPieSlice, DitherRadarChart;
 export 'src/dither/dither_paint.dart'
     show
         DitherVariant,
+        bayerAt,
         backingSize,
         cellSize,
         clamp01,
@@ -26,3 +37,14 @@ export 'src/dither/palette.dart'
         seedOf;
 export 'src/dither/sparkline.dart'
     show DitherSparkline, ditherVariantFromName, parseSparklineValues;
+export 'src/dither/primitives.dart'
+    show
+        DitherAvatar,
+        DitherAvatarMirror,
+        DitherBloom,
+        DitherButton,
+        DitherGradient,
+        DitherGradientDirection,
+        DitherPixelColor,
+        ditherFillOf,
+        ditherHueFill;
