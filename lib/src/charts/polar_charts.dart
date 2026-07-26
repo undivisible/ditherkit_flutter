@@ -284,7 +284,6 @@ class _PiePainter extends CustomPainter {
     double dim,
     double intensity,
   ) {
-    final box = Rect.fromCircle(center: center, radius: radius);
     final cell = 2.0;
     final fill = ditherRgb(seedOf(slice.color).fill);
     final rim = Paint()

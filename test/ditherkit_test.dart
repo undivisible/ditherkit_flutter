@@ -159,6 +159,7 @@ void main() {
     );
     expect(find.byType(DitherPieChart), findsOneWidget);
     expect(find.byType(DitherRadarChart), findsOneWidget);
+    await tester.scrollUntilVisible(find.byType(DitherAvatar), 200);
     expect(find.byType(DitherAvatar), findsOneWidget);
     expect(find.byType(DitherButton), findsOneWidget);
   });
