@@ -53,4 +53,59 @@ void main() {
     );
     expect(find.byType(DitherAreaChart), findsOneWidget);
   });
+
+  testWidgets('DitherBarChart runs its own staggered entrance', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(body: DitherBarChart(values: [1, 3, 2, 5, 4])),
+      ),
+    );
+    final startingPainter =
+        tester
+                .widget<CustomPaint>(
+                  find.descendant(
+                    of: find.byType(DitherBarChart),
+                    matching: find.byType(CustomPaint),
+                  ),
+                )
+                .painter
+            as DitherBarPainter;
+    expect(startingPainter.reveal, lessThan(1));
+
+    await tester.pump(const Duration(seconds: 1));
+    final completePainter =
+        tester
+                .widget<CustomPaint>(
+                  find.descendant(
+                    of: find.byType(DitherBarChart),
+                    matching: find.byType(CustomPaint),
+                  ),
+                )
+                .painter
+            as DitherBarPainter;
+    expect(completePainter.reveal, 1);
+  });
+
+  testWidgets('DitherAreaChart disables motion when requested', (tester) async {
+    await tester.pumpWidget(
+      MediaQuery(
+        data: const MediaQueryData(disableAnimations: true),
+        child: const MaterialApp(
+          home: Scaffold(body: DitherAreaChart(values: [1, 3, 2, 5, 4])),
+        ),
+      ),
+    );
+    final painter =
+        tester
+                .widget<CustomPaint>(
+                  find.descendant(
+                    of: find.byType(DitherAreaChart),
+                    matching: find.byType(CustomPaint),
+                  ),
+                )
+                .painter
+            as DitherAreaPainter;
+    expect(painter.reveal, 1);
+    expect(painter.idlePhase, isNull);
+  });
 }
