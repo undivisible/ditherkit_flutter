@@ -133,28 +133,37 @@ class _DitherPieChartState extends State<DitherPieChart>
                       _hovered = null;
                     })
                   : null,
-              child: GestureDetector(
+              child: Listener(
                 behavior: HitTestBehavior.opaque,
-                onPanDown: widget.interactive
-                    ? (details) => _hover(details.localPosition, size)
+                onPointerHover: widget.interactive
+                    ? (event) => _hover(event.localPosition, size)
                     : null,
-                onPanUpdate: widget.interactive
-                    ? (details) => _hover(details.localPosition, size)
+                onPointerDown: widget.interactive
+                    ? (event) => _hover(event.localPosition, size)
                     : null,
-                onTap: widget.interactive ? _select : null,
-                child: CustomPaint(
-                  size: Size.infinite,
-                  painter: _PiePainter(
-                    widget.data,
-                    widget.innerRadius,
-                    _reduced == true || !widget.animate
-                        ? 1
-                        : Curves.easeInOutCubic.transform(_controller.value),
-                    _hovered,
-                    selected,
-                    widget.bloom,
-                    widget.bloomOnHover,
-                    _inside,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onPanDown: widget.interactive
+                      ? (details) => _hover(details.localPosition, size)
+                      : null,
+                  onPanUpdate: widget.interactive
+                      ? (details) => _hover(details.localPosition, size)
+                      : null,
+                  onTap: widget.interactive ? _select : null,
+                  child: CustomPaint(
+                    size: Size.infinite,
+                    painter: _PiePainter(
+                      widget.data,
+                      widget.innerRadius,
+                      _reduced == true || !widget.animate
+                          ? 1
+                          : Curves.easeInOutCubic.transform(_controller.value),
+                      _hovered,
+                      selected,
+                      widget.bloom,
+                      widget.bloomOnHover,
+                      _inside,
+                    ),
                   ),
                 ),
               ),
@@ -425,49 +434,70 @@ class _DitherRadarChartState extends State<DitherRadarChart>
                       _hoverAxis = null;
                     })
                   : null,
-              child: GestureDetector(
+              child: Listener(
                 behavior: HitTestBehavior.opaque,
-                onPanDown: widget.interactive
-                    ? (details) => setState(
+                onPointerHover: widget.interactive
+                    ? (event) => setState(
                         () => _hoverAxis = _radarAxisAt(
-                          details.localPosition,
+                          event.localPosition,
                           size,
                           widget.data.length,
                         ),
                       )
                     : null,
-                onPanUpdate: widget.interactive
-                    ? (details) => setState(
+                onPointerDown: widget.interactive
+                    ? (event) => setState(
                         () => _hoverAxis = _radarAxisAt(
-                          details.localPosition,
+                          event.localPosition,
                           size,
                           widget.data.length,
                         ),
                       )
                     : null,
-                onTap: widget.interactive && widget.series.isNotEmpty
-                    ? () {
-                        final next = selected == widget.series.first.dataKey
-                            ? null
-                            : widget.series.first.dataKey;
-                        setState(() => _selected = next);
-                        widget.onSelectionChange?.call(next);
-                      }
-                    : null,
-                child: CustomPaint(
-                  size: Size.infinite,
-                  painter: _RadarPainter(
-                    widget.data,
-                    widget.series,
-                    widget.nameKey,
-                    _reduced == true || !widget.animate
-                        ? 1
-                        : Curves.easeInOutCubic.transform(_controller.value),
-                    _hoverAxis,
-                    selected,
-                    widget.bloom,
-                    widget.bloomOnHover,
-                    _inside,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onPanDown: widget.interactive
+                      ? (details) => setState(
+                          () => _hoverAxis = _radarAxisAt(
+                            details.localPosition,
+                            size,
+                            widget.data.length,
+                          ),
+                        )
+                      : null,
+                  onPanUpdate: widget.interactive
+                      ? (details) => setState(
+                          () => _hoverAxis = _radarAxisAt(
+                            details.localPosition,
+                            size,
+                            widget.data.length,
+                          ),
+                        )
+                      : null,
+                  onTap: widget.interactive && widget.series.isNotEmpty
+                      ? () {
+                          final next = selected == widget.series.first.dataKey
+                              ? null
+                              : widget.series.first.dataKey;
+                          setState(() => _selected = next);
+                          widget.onSelectionChange?.call(next);
+                        }
+                      : null,
+                  child: CustomPaint(
+                    size: Size.infinite,
+                    painter: _RadarPainter(
+                      widget.data,
+                      widget.series,
+                      widget.nameKey,
+                      _reduced == true || !widget.animate
+                          ? 1
+                          : Curves.easeInOutCubic.transform(_controller.value),
+                      _hoverAxis,
+                      selected,
+                      widget.bloom,
+                      widget.bloomOnHover,
+                      _inside,
+                    ),
                   ),
                 ),
               ),

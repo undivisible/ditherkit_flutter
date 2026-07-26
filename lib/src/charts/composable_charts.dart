@@ -221,30 +221,39 @@ class _DitherCartesianChartState extends State<DitherCartesianChart>
                 ? (_) => setState(() => _pointerInside = true)
                 : null,
             onExit: widget.interactive ? (_) => _clearHover() : null,
-            child: GestureDetector(
+            child: Listener(
               behavior: HitTestBehavior.opaque,
-              onTap: widget.interactive ? _select : null,
-              onPanDown: widget.interactive
-                  ? (details) => _setHover(details.localPosition, size)
+              onPointerHover: widget.interactive
+                  ? (event) => _setHover(event.localPosition, size)
                   : null,
-              onPanUpdate: widget.interactive
-                  ? (details) => _setHover(details.localPosition, size)
+              onPointerDown: widget.interactive
+                  ? (event) => _setHover(event.localPosition, size)
                   : null,
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  CustomPaint(size: Size.infinite, painter: painter),
-                  if (widget.showTooltip &&
-                      visibleHover != null &&
-                      widget.data.isNotEmpty)
-                    _CartesianTooltip(
-                      layout: layout,
-                      index: visibleHover.clamp(0, widget.data.length - 1),
-                      labelKey: widget.labelKey,
-                      selected: selected,
-                      rect: _plotRect(size, widget.showAxes),
-                    ),
-                ],
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: widget.interactive ? _select : null,
+                onPanDown: widget.interactive
+                    ? (details) => _setHover(details.localPosition, size)
+                    : null,
+                onPanUpdate: widget.interactive
+                    ? (details) => _setHover(details.localPosition, size)
+                    : null,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    CustomPaint(size: Size.infinite, painter: painter),
+                    if (widget.showTooltip &&
+                        visibleHover != null &&
+                        widget.data.isNotEmpty)
+                      _CartesianTooltip(
+                        layout: layout,
+                        index: visibleHover.clamp(0, widget.data.length - 1),
+                        labelKey: widget.labelKey,
+                        selected: selected,
+                        rect: _plotRect(size, widget.showAxes),
+                      ),
+                  ],
+                ),
               ),
             ),
           );

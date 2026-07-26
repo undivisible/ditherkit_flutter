@@ -14,6 +14,12 @@ class DitherBarChart extends StatelessWidget {
     this.height = 120,
     this.intensity = 0,
     this.animate = true,
+    this.interactive = true,
+    this.markerIndex,
+    this.hovered = false,
+    this.onHoverChange,
+    this.onSelectionChange,
+    this.replayToken = 0,
     super.key,
   });
 
@@ -23,6 +29,12 @@ class DitherBarChart extends StatelessWidget {
   final double height;
   final double intensity;
   final bool animate;
+  final bool interactive;
+  final int? markerIndex;
+  final bool hovered;
+  final ValueChanged<int?>? onHoverChange;
+  final ValueChanged<int?>? onSelectionChange;
+  final Object replayToken;
 
   @override
   Widget build(BuildContext context) {
@@ -30,14 +42,22 @@ class DitherBarChart extends StatelessWidget {
     return DitherChartCanvas(
       height: height,
       animate: animate,
-      replayKey: values,
-      painter: (reveal, idlePhase) => DitherBarPainter(
-        values: values,
-        color: color,
-        variant: variant,
-        intensity: intensity,
-        reveal: reveal,
-      ),
+      replayKey: (values, replayToken),
+      seriesLength: values.length,
+      interactive: interactive,
+      markerIndex: markerIndex,
+      hovered: hovered,
+      onHoverChange: onHoverChange,
+      onSelectionChange: onSelectionChange,
+      painter: (reveal, idlePhase, markerIndex, hoverIntensity) =>
+          DitherBarPainter(
+            values: values,
+            color: color,
+            variant: variant,
+            intensity: intensity + hoverIntensity,
+            reveal: reveal,
+            markerIndex: markerIndex,
+          ),
     );
   }
 }
@@ -49,6 +69,7 @@ class DitherBarPainter extends CustomPainter {
     required this.variant,
     this.intensity = 0,
     this.reveal = 1,
+    this.markerIndex,
   });
 
   final List<double> values;
@@ -56,6 +77,7 @@ class DitherBarPainter extends CustomPainter {
   final DitherVariant variant;
   final double intensity;
   final double reveal;
+  final int? markerIndex;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -67,6 +89,7 @@ class DitherBarPainter extends CustomPainter {
       variant: variant,
       intensity: intensity,
       reveal: reveal,
+      markerIndex: markerIndex,
     );
   }
 
@@ -76,6 +99,7 @@ class DitherBarPainter extends CustomPainter {
         oldDelegate.color != color ||
         oldDelegate.variant != variant ||
         oldDelegate.intensity != intensity ||
-        oldDelegate.reveal != reveal;
+        oldDelegate.reveal != reveal ||
+        oldDelegate.markerIndex != markerIndex;
   }
 }

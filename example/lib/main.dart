@@ -23,8 +23,16 @@ class DitherKitExampleApp extends StatelessWidget {
   }
 }
 
-class DitherKitExamplePage extends StatelessWidget {
+class DitherKitExamplePage extends StatefulWidget {
   const DitherKitExamplePage({super.key});
+
+  @override
+  State<DitherKitExamplePage> createState() => _DitherKitExamplePageState();
+}
+
+class _DitherKitExamplePageState extends State<DitherKitExamplePage> {
+  int _replayToken = 0;
+  int? _scrubbedIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -58,44 +66,64 @@ class DitherKitExamplePage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  'Pixel-built CustomPaint charts with an entrance sweep and quiet idle sparkles.',
-                  style: TextStyle(color: Color(0xffa1a1a1), fontSize: 16),
+                Text(
+                  _scrubbedIndex == null
+                      ? 'Scrub a graph to place its crosshair. Click to lock it, or replay every chart entrance.'
+                      : 'Scrubbing data point ${_scrubbedIndex! + 1}. Click the graph to lock its marker.',
+                  style: const TextStyle(
+                    color: Color(0xffa1a1a1),
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: DitherButton(
+                    color: DitherColor.purple,
+                    onPressed: () => setState(() => _replayToken++),
+                    child: const Text('Replay entrance'),
+                  ),
                 ),
                 const SizedBox(height: 40),
                 _DitherPanel(
                   title: 'Weekly activity',
                   kind: 'AREA / GRADIENT',
-                  child: const DitherAreaChart(
+                  child: DitherAreaChart(
                     values: [18, 32, 26, 49, 38, 64, 58, 74, 66, 92],
                     color: DitherColor.purple,
                     variant: DitherVariant.gradient,
                     height: 220,
                     intensity: 0.35,
+                    replayToken: _replayToken,
+                    onHoverChange: (index) =>
+                        setState(() => _scrubbedIndex = index),
                   ),
                 ),
                 const SizedBox(height: 16),
                 _DitherPanel(
                   title: 'Release cadence',
                   kind: 'BAR / HATCHED',
-                  child: const DitherBarChart(
+                  child: DitherBarChart(
                     values: [4, 8, 5, 12, 9, 15, 11],
                     color: DitherColor.orange,
                     variant: DitherVariant.hatched,
                     height: 180,
                     intensity: 0.2,
+                    replayToken: _replayToken,
                   ),
                 ),
                 const SizedBox(height: 16),
                 _DitherPanel(
                   title: 'Live signal',
                   kind: 'SPARKLINE / DOTTED',
-                  child: const DitherSparkline(
+                  child: DitherSparkline(
                     values: [5, 8, 6, 13, 10, 18, 15, 24, 19, 30],
                     color: DitherColor.green,
                     variant: DitherVariant.dotted,
                     height: 120,
                     animate: true,
+                    interactive: true,
+                    replayToken: _replayToken,
                   ),
                 ),
                 const SizedBox(height: 16),

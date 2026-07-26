@@ -110,6 +110,7 @@ void paintSparkline(
   double intensity = 0,
   double reveal = 1,
   double? idlePhase,
+  int? markerIndex,
 }) {
   if (values.isEmpty || size.width <= 0 || size.height <= 0) return;
   final backing = backingSize(size.width, size.height);
@@ -159,6 +160,29 @@ void paintSparkline(
       canvas.drawRect(
         Rect.fromLTWH(x - length.toDouble(), y, length * 2 + 1, 1),
         star,
+      );
+    }
+  }
+  if (markerIndex != null && values.isNotEmpty) {
+    final sourceIndex = markerIndex.clamp(0, values.length - 1);
+    final x = (sourceIndex / math.max(values.length - 1, 1) * (cols - 1))
+        .round();
+    if (x < visibleCols) {
+      final y = tops[x].toDouble();
+      final guide = Paint()
+        ..color = ditherRgb(seed.lineOrFill).withValues(alpha: 0.52);
+      for (var row = 0; row < rows; row += 6) {
+        canvas.drawRect(
+          Rect.fromLTWH(x.toDouble(), row.toDouble(), 1, 3),
+          guide,
+        );
+      }
+      final halo = Paint()
+        ..color = ditherRgb(seed.lineOrFill).withValues(alpha: 0.2);
+      canvas.drawRect(Rect.fromLTWH(x - 3.0, y - 3, 7, 7), halo);
+      canvas.drawRect(
+        Rect.fromLTWH(x - 1.0, y - 1, 3, 3),
+        Paint()..color = ditherRgb(seed.starOrFill),
       );
     }
   }

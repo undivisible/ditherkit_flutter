@@ -1,3 +1,5 @@
+import 'dart:ui' show PointerDeviceKind;
+
 import 'package:ditherkit_flutter/ditherkit_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -107,6 +109,93 @@ void main() {
             as DitherAreaPainter;
     expect(painter.reveal, 1);
     expect(painter.idlePhase, isNull);
+  });
+
+  testWidgets('simple charts scrub, lock, and replay natively', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: DitherAreaChart(values: [1, 3, 2, 5, 4], replayToken: 1),
+        ),
+      ),
+    );
+    final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    await gesture.addPointer(location: const Offset(0, 0));
+    await gesture.moveTo(const Offset(220, 60));
+    await tester.pump();
+
+    final hovered =
+        tester
+                .widget<CustomPaint>(
+                  find.descendant(
+                    of: find.byType(DitherAreaChart),
+                    matching: find.byType(CustomPaint),
+                  ),
+                )
+                .painter
+            as DitherAreaPainter;
+    expect(hovered.markerIndex, isNotNull);
+
+    await tester.tapAt(const Offset(220, 60));
+    await gesture.removePointer();
+    await tester.pump();
+
+    final locked =
+        tester
+                .widget<CustomPaint>(
+                  find.descendant(
+                    of: find.byType(DitherAreaChart),
+                    matching: find.byType(CustomPaint),
+                  ),
+                )
+                .painter
+            as DitherAreaPainter;
+    expect(locked.markerIndex, equals(hovered.markerIndex));
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: DitherAreaChart(values: [1, 3, 2, 5, 4], replayToken: 2),
+        ),
+      ),
+    );
+    final replaying =
+        tester
+                .widget<CustomPaint>(
+                  find.descendant(
+                    of: find.byType(DitherAreaChart),
+                    matching: find.byType(CustomPaint),
+                  ),
+                )
+                .painter
+            as DitherAreaPainter;
+    expect(replaying.reveal, lessThan(1));
+  });
+
+  testWidgets('composable chart responds to a desktop hover', (tester) async {
+    int? hovered;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: DitherCartesianChart(
+            data: const [
+              {'label': 'A', 'value': 2},
+              {'label': 'B', 'value': 5},
+            ],
+            series: const [
+              DitherSeries(dataKey: 'value', color: DitherColor.blue),
+            ],
+            labelKey: 'label',
+            onHoverChange: (index) => hovered = index,
+          ),
+        ),
+      ),
+    );
+    final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    await gesture.addPointer(location: const Offset(0, 0));
+    await gesture.moveTo(const Offset(180, 100));
+    await tester.pump();
+    expect(hovered, isNotNull);
   });
 
   testWidgets('full chart family and standalone primitives paint', (

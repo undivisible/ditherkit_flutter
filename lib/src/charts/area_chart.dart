@@ -15,6 +15,12 @@ class DitherAreaChart extends StatelessWidget {
     this.height = 120,
     this.intensity = 0,
     this.animate = true,
+    this.interactive = true,
+    this.markerIndex,
+    this.hovered = false,
+    this.onHoverChange,
+    this.onSelectionChange,
+    this.replayToken = 0,
     super.key,
   });
 
@@ -24,6 +30,12 @@ class DitherAreaChart extends StatelessWidget {
   final double height;
   final double intensity;
   final bool animate;
+  final bool interactive;
+  final int? markerIndex;
+  final bool hovered;
+  final ValueChanged<int?>? onHoverChange;
+  final ValueChanged<int?>? onSelectionChange;
+  final Object replayToken;
 
   @override
   Widget build(BuildContext context) {
@@ -31,15 +43,23 @@ class DitherAreaChart extends StatelessWidget {
     return DitherChartCanvas(
       height: height,
       animate: animate,
-      replayKey: values,
-      painter: (reveal, idlePhase) => DitherAreaPainter(
-        values: values,
-        color: color,
-        variant: variant,
-        intensity: intensity,
-        reveal: reveal,
-        idlePhase: idlePhase,
-      ),
+      replayKey: (values, replayToken),
+      seriesLength: values.length,
+      interactive: interactive,
+      markerIndex: markerIndex,
+      hovered: hovered,
+      onHoverChange: onHoverChange,
+      onSelectionChange: onSelectionChange,
+      painter: (reveal, idlePhase, markerIndex, hoverIntensity) =>
+          DitherAreaPainter(
+            values: values,
+            color: color,
+            variant: variant,
+            intensity: intensity + hoverIntensity,
+            reveal: reveal,
+            idlePhase: idlePhase,
+            markerIndex: markerIndex,
+          ),
     );
   }
 }
@@ -52,6 +72,7 @@ class DitherAreaPainter extends CustomPainter {
     this.intensity = 0,
     this.reveal = 1,
     this.idlePhase,
+    this.markerIndex,
   });
 
   final List<double> values;
@@ -60,6 +81,7 @@ class DitherAreaPainter extends CustomPainter {
   final double intensity;
   final double reveal;
   final double? idlePhase;
+  final int? markerIndex;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -72,6 +94,7 @@ class DitherAreaPainter extends CustomPainter {
       intensity: intensity,
       reveal: reveal,
       idlePhase: idlePhase,
+      markerIndex: markerIndex,
     );
   }
 
@@ -82,7 +105,8 @@ class DitherAreaPainter extends CustomPainter {
         oldDelegate.variant != variant ||
         oldDelegate.intensity != intensity ||
         oldDelegate.reveal != reveal ||
-        oldDelegate.idlePhase != idlePhase;
+        oldDelegate.idlePhase != idlePhase ||
+        oldDelegate.markerIndex != markerIndex;
   }
 }
 
@@ -96,6 +120,7 @@ void paintBarChart(
   double intensity = 0,
   double gapFraction = 0.2,
   double reveal = 1,
+  int? markerIndex,
 }) {
   if (values.isEmpty || size.width <= 0 || size.height <= 0) return;
   final backing = backingSize(size.width, size.height);
@@ -125,7 +150,11 @@ void paintBarChart(
     final progress = _easeOutCubic(
       clamp01((clamp01(reveal) - start) / (1 - 0.55)),
     );
-    final grown = baseline + (target - baseline) * progress;
+    final active = markerIndex == i;
+    final dim = markerIndex != null && !active ? 0.48 : 1.0;
+    final grown =
+        baseline +
+        (target - baseline) * clamp01(progress + (active ? 0.055 : 0));
     final top = math.min(grown, baseline).round();
     final floor = math.max(grown, baseline).round();
     final x0 = (i * stride + (stride - barWidth) / 2).round();
@@ -137,7 +166,15 @@ void paintBarChart(
         floor,
         seed,
         variant,
-        intensity: intensity,
+        intensity: intensity + (active ? 0.4 : 0),
+        dim: dim,
+      );
+    }
+    if (active) {
+      final marker = Paint()..color = ditherRgb(seed.starOrFill);
+      canvas.drawRect(
+        Rect.fromLTWH(x0.toDouble(), top.toDouble(), barWidth.toDouble(), 1),
+        marker,
       );
     }
   }
