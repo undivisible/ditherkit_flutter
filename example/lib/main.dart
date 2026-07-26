@@ -1,5 +1,6 @@
 import 'package:ditherkit_flutter/ditherkit_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 const List<double> _areaValues = [18, 32, 26, 49, 38, 64, 58, 74, 66, 92];
 const List<double> _barValues = [4, 8, 5, 12, 9, 15, 11];
@@ -163,7 +164,7 @@ class _DitherKitExamplePageState extends State<DitherKitExamplePage> {
                         ),
                       ],
                       kind: DitherChartKind.line,
-                      height: 220,
+                      height: 188,
                       labelKey: 'week',
                       showLegend: true,
                       bloom: DitherBloom.low,
@@ -375,11 +376,68 @@ class _DemoPanel extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 12),
-              Expanded(child: child),
+              Expanded(child: _ViewportTickerMode(child: child)),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class _ViewportTickerMode extends StatefulWidget {
+  const _ViewportTickerMode({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_ViewportTickerMode> createState() => _ViewportTickerModeState();
+}
+
+class _ViewportTickerModeState extends State<_ViewportTickerMode> {
+  ScrollPosition? _position;
+  var _visible = true;
+  var _hovered = false;
+  var _scheduled = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final position = Scrollable.of(context).position;
+    if (_position == position) return;
+    _position?.removeListener(_scheduleVisibilityCheck);
+    _position = position;
+    _position?.addListener(_scheduleVisibilityCheck);
+    _scheduleVisibilityCheck();
+  }
+
+  void _scheduleVisibilityCheck() {
+    if (_scheduled) return;
+    _scheduled = true;
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _scheduled = false;
+      if (!mounted) return;
+      final box = context.findRenderObject();
+      if (box is! RenderBox || !box.hasSize) return;
+      final top = box.localToGlobal(Offset.zero).dy;
+      final next =
+          top < MediaQuery.sizeOf(context).height && top + box.size.height > 0;
+      if (next != _visible) setState(() => _visible = next);
+    });
+  }
+
+  @override
+  void dispose() {
+    _position?.removeListener(_scheduleVisibilityCheck);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: TickerMode(enabled: _visible || _hovered, child: widget.child),
     );
   }
 }

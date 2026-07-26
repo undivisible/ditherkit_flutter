@@ -7,8 +7,11 @@ void main() {
 
     expect(find.text('DITHER KIT'), findsOneWidget);
     expect(find.text('Weekly activity'), findsOneWidget);
+
+    await tester.scrollUntilVisible(find.text('Release cadence'), 500);
     expect(find.text('Release cadence'), findsOneWidget);
 
+    await tester.scrollUntilVisible(find.text('Live signal'), 500);
     expect(find.text('Live signal'), findsOneWidget);
 
     await tester.scrollUntilVisible(find.text('Build mix'), 500);

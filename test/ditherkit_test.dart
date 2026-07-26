@@ -199,6 +199,40 @@ void main() {
     expect(painter.reveal, 1);
   });
 
+  testWidgets('TickerMode pauses an inactive dither chart', (tester) async {
+    await tester.pumpWidget(
+      const TickerMode(
+        enabled: false,
+        child: MaterialApp(
+          home: Scaffold(body: DitherAreaChart(values: [1, 3, 2, 5, 4])),
+        ),
+      ),
+    );
+    final before =
+        tester
+                .widget<CustomPaint>(
+                  find.descendant(
+                    of: find.byType(DitherAreaChart),
+                    matching: find.byType(CustomPaint),
+                  ),
+                )
+                .painter
+            as DitherAreaPainter;
+    await tester.pump(const Duration(seconds: 2));
+    final after =
+        tester
+                .widget<CustomPaint>(
+                  find.descendant(
+                    of: find.byType(DitherAreaChart),
+                    matching: find.byType(CustomPaint),
+                  ),
+                )
+                .painter
+            as DitherAreaPainter;
+    expect(after.reveal, before.reveal);
+    expect(after.idlePhase, before.idlePhase);
+  });
+
   testWidgets('composable chart responds to a desktop hover', (tester) async {
     int? hovered;
     await tester.pumpWidget(
