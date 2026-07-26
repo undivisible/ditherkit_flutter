@@ -2,14 +2,14 @@ import 'package:ditherkit_flutter_example/main.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('renders every dither chart', (tester) async {
+  testWidgets('renders every animated dither chart', (tester) async {
     await tester.pumpWidget(const DitherKitExampleApp());
 
-    expect(find.text('DitherKit for Flutter'), findsOneWidget);
-    expect(find.text('DitherAreaChart'), findsOneWidget);
-    expect(find.text('DitherBarChart'), findsOneWidget);
+    expect(find.text('DITHER KIT'), findsOneWidget);
+    expect(find.text('Weekly activity'), findsOneWidget);
+    expect(find.text('Release cadence'), findsOneWidget);
 
-    await tester.scrollUntilVisible(find.text('DitherSparkline'), 400);
-    expect(find.text('DitherSparkline'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('Live signal'), 400);
+    expect(find.text('Live signal'), findsOneWidget);
   });
 }
