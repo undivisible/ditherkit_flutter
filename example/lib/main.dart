@@ -1,6 +1,7 @@
 import 'package:ditherkit_flutter/ditherkit_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 const List<double> _areaValues = [18, 32, 26, 49, 38, 64, 58, 74, 66, 92];
 const List<double> _barValues = [4, 8, 5, 12, 9, 15, 11];
@@ -91,6 +92,16 @@ class _DitherKitExamplePageState extends State<DitherKitExamplePage> {
                             color: DitherColor.purple,
                             onPressed: () => setState(() => _replayToken++),
                             child: const Text('Replay entrance'),
+                          ),
+                          const SizedBox(height: 8),
+                          TextButton(
+                            onPressed: () => launchUrl(
+                              Uri.parse(
+                                'https://pub.dev/packages/ditherkit_flutter',
+                              ),
+                              mode: LaunchMode.externalApplication,
+                            ),
+                            child: const Text('pub.dev'),
                           ),
                         ],
                       ),
