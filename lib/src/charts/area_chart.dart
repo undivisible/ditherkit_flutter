@@ -43,7 +43,7 @@ class DitherAreaChart extends StatelessWidget {
     return DitherChartCanvas(
       height: height,
       animate: animate,
-      replayKey: (values, replayToken),
+      replayKey: (Object.hashAll(values), replayToken),
       seriesLength: values.length,
       interactive: interactive,
       markerIndex: markerIndex,

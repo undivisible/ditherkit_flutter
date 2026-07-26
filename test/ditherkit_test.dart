@@ -172,6 +172,33 @@ void main() {
     expect(replaying.reveal, lessThan(1));
   });
 
+  testWidgets('hover-state rebuild inputs do not replay entrances', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(body: DitherAreaChart(values: [1, 3, 2, 5, 4])),
+      ),
+    );
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(body: DitherAreaChart(values: [1, 3, 2, 5, 4])),
+      ),
+    );
+    final painter =
+        tester
+                .widget<CustomPaint>(
+                  find.descendant(
+                    of: find.byType(DitherAreaChart),
+                    matching: find.byType(CustomPaint),
+                  ),
+                )
+                .painter
+            as DitherAreaPainter;
+    expect(painter.reveal, 1);
+  });
+
   testWidgets('composable chart responds to a desktop hover', (tester) async {
     int? hovered;
     await tester.pumpWidget(

@@ -114,8 +114,7 @@ class _DitherCartesianChartState extends State<DitherCartesianChart>
   @override
   void didUpdateWidget(covariant DitherCartesianChart oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.data != widget.data ||
-        oldWidget.series != widget.series ||
+    if (_cartesianSignature(oldWidget) != _cartesianSignature(widget) ||
         oldWidget.replayToken != widget.replayToken ||
         oldWidget.animate != widget.animate ||
         oldWidget.animationDuration != widget.animationDuration) {
@@ -885,3 +884,20 @@ double _value(Object? value) =>
 String _number(double value) => value.abs() >= 1000
     ? value.toStringAsFixed(0)
     : value.toStringAsFixed(value == value.roundToDouble() ? 0 : 1);
+
+int _cartesianSignature(DitherCartesianChart chart) => Object.hashAll([
+  chart.kind,
+  chart.stackType,
+  for (final row in chart.data)
+    Object.hashAll([
+      for (final entry in row.entries) Object.hash(entry.key, entry.value),
+    ]),
+  for (final series in chart.series)
+    Object.hash(
+      series.dataKey,
+      series.color,
+      series.label,
+      series.variant,
+      series.isClickable,
+    ),
+]);

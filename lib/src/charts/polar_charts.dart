@@ -77,7 +77,7 @@ class _DitherPieChartState extends State<DitherPieChart>
   @override
   void didUpdateWidget(covariant DitherPieChart oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.data != widget.data ||
+    if (_pieSignature(oldWidget) != _pieSignature(widget) ||
         oldWidget.replayToken != widget.replayToken ||
         oldWidget.animate != widget.animate ||
         oldWidget.animationDuration != widget.animationDuration)
@@ -392,8 +392,7 @@ class _DitherRadarChartState extends State<DitherRadarChart>
   @override
   void didUpdateWidget(covariant DitherRadarChart oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.data != widget.data ||
-        oldWidget.series != widget.series ||
+    if (_radarSignature(oldWidget) != _radarSignature(widget) ||
         oldWidget.replayToken != widget.replayToken ||
         oldWidget.animate != widget.animate ||
         oldWidget.animationDuration != widget.animationDuration)
@@ -779,3 +778,29 @@ double _radarValue(Object? value) =>
 String _pieNumber(double value) => value == value.roundToDouble()
     ? value.toStringAsFixed(0)
     : value.toStringAsFixed(1);
+
+int _pieSignature(DitherPieChart chart) => Object.hashAll([
+  for (final slice in chart.data)
+    Object.hash(
+      slice.name,
+      slice.value,
+      slice.color,
+      slice.variant,
+      slice.label,
+    ),
+]);
+
+int _radarSignature(DitherRadarChart chart) => Object.hashAll([
+  for (final row in chart.data)
+    Object.hashAll([
+      for (final entry in row.entries) Object.hash(entry.key, entry.value),
+    ]),
+  for (final series in chart.series)
+    Object.hash(
+      series.dataKey,
+      series.color,
+      series.label,
+      series.variant,
+      series.isClickable,
+    ),
+]);

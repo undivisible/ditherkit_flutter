@@ -69,8 +69,7 @@ class _DitherChartCanvasState extends State<DitherChartCanvas>
   void didUpdateWidget(covariant DitherChartCanvas oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.replayKey != widget.replayKey ||
-        oldWidget.animate != widget.animate ||
-        oldWidget.markerIndex != widget.markerIndex) {
+        oldWidget.animate != widget.animate) {
       _play();
     }
   }
