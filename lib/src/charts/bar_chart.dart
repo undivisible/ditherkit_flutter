@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../dither/dither_paint.dart';
 import '../dither/palette.dart';
 import 'area_chart.dart';
+import 'chart_motion.dart';
 
 /// Full-width dithered bar chart.
 class DitherBarChart extends StatelessWidget {
@@ -12,6 +13,7 @@ class DitherBarChart extends StatelessWidget {
     this.variant = DitherVariant.gradient,
     this.height = 120,
     this.intensity = 0,
+    this.animate = true,
     super.key,
   });
 
@@ -20,20 +22,21 @@ class DitherBarChart extends StatelessWidget {
   final DitherVariant variant;
   final double height;
   final double intensity;
+  final bool animate;
 
   @override
   Widget build(BuildContext context) {
     if (values.isEmpty) return SizedBox(height: height);
-    return SizedBox(
+    return DitherChartCanvas(
       height: height,
-      width: double.infinity,
-      child: CustomPaint(
-        painter: DitherBarPainter(
-          values: values,
-          color: color,
-          variant: variant,
-          intensity: intensity,
-        ),
+      animate: animate,
+      replayKey: values,
+      painter: (reveal, idlePhase) => DitherBarPainter(
+        values: values,
+        color: color,
+        variant: variant,
+        intensity: intensity,
+        reveal: reveal,
       ),
     );
   }
@@ -45,12 +48,14 @@ class DitherBarPainter extends CustomPainter {
     required this.color,
     required this.variant,
     this.intensity = 0,
+    this.reveal = 1,
   });
 
   final List<double> values;
   final DitherColor color;
   final DitherVariant variant;
   final double intensity;
+  final double reveal;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -61,6 +66,7 @@ class DitherBarPainter extends CustomPainter {
       color: color,
       variant: variant,
       intensity: intensity,
+      reveal: reveal,
     );
   }
 
@@ -69,6 +75,7 @@ class DitherBarPainter extends CustomPainter {
     return oldDelegate.values != values ||
         oldDelegate.color != color ||
         oldDelegate.variant != variant ||
-        oldDelegate.intensity != intensity;
+        oldDelegate.intensity != intensity ||
+        oldDelegate.reveal != reveal;
   }
 }

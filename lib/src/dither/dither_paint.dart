@@ -106,6 +106,8 @@ void paintSparkline(
   required DitherColor color,
   DitherVariant variant = DitherVariant.gradient,
   double intensity = 0,
+  double reveal = 1,
+  double? idlePhase,
 }) {
   if (values.isEmpty || size.width <= 0 || size.height <= 0) return;
   final backing = backingSize(size.width, size.height);
@@ -123,7 +125,8 @@ void paintSparkline(
   final seed = seedOf(color);
   canvas.save();
   canvas.scale(size.width / cols, size.height / rows);
-  for (var x = 0; x < cols; x++) {
+  final visibleCols = (cols * clamp01(reveal)).ceil();
+  for (var x = 0; x < visibleCols; x++) {
     paintDitherColumn(
       canvas,
       x,
@@ -133,6 +136,29 @@ void paintSparkline(
       variant,
       intensity: intensity,
     );
+  }
+  if (idlePhase != null) {
+    final (fillR, _, _) = seed.fill;
+    final star = Paint()..color = ditherRgb(seed.starOrFill);
+    for (var i = 0; i < values.length; i++) {
+      final x = (i / math.max(values.length - 1, 1) * (cols - 1)).round();
+      if (x >= visibleCols) continue;
+      final glint =
+          (math.sin((idlePhase + i * 0.173 + fillR / 255) * math.pi * 2) + 1) /
+          2;
+      if (glint < 0.7) continue;
+      final y = tops[x].toDouble();
+      final length = 1 + (glint * 3).round();
+      star.color = ditherRgb(seed.starOrFill).withValues(alpha: glint * 0.8);
+      canvas.drawRect(
+        Rect.fromLTWH(x.toDouble(), y - length, 1, length * 2 + 1),
+        star,
+      );
+      canvas.drawRect(
+        Rect.fromLTWH(x - length.toDouble(), y, length * 2 + 1, 1),
+        star,
+      );
+    }
   }
   canvas.restore();
 }
