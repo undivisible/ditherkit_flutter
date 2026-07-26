@@ -1,6 +1,6 @@
 {
-    "name": "ditherkit_flutter_example",
-    "short_name": "ditherkit_flutter_example",
+    "name": "DitherKit for Flutter",
+    "short_name": "DitherKit",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
