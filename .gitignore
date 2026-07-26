@@ -4,6 +4,7 @@
 **/target/
 **/.flutter-plugins
 **/.flutter-plugins-dependencies
+.wrangler/
 pubspec.lock
 *.iml
 .DS_Store
