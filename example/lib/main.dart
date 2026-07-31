@@ -21,6 +21,7 @@ class DitherKitExampleApp extends StatelessWidget {
         brightness: Brightness.dark,
         scaffoldBackgroundColor: Colors.black,
         colorScheme: const ColorScheme.dark(surface: Color(0xff070707)),
+        fontFamily: 'JetBrains Mono',
         useMaterial3: true,
       ),
       home: const DitherKitExamplePage(),

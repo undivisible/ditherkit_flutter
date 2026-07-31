@@ -12,8 +12,8 @@ void main() {
     final bootstrap = File('web/flutter_bootstrap.js').readAsStringSync();
 
     expect(File('web/flutter_service_worker.js').existsSync(), isFalse);
-    expect(index, contains('flutter_bootstrap.js?shell=4'));
-    expect(bootstrap, contains("mainWasmPath += '?shell=4'"));
+    expect(index, contains('flutter_bootstrap.js?shell=5'));
+    expect(bootstrap, contains("mainWasmPath += '?shell=5'"));
     for (final path in ['/main.dart.js', '/main.dart.mjs', '/main.dart.wasm']) {
       expect(
         headers,
@@ -30,6 +30,12 @@ void main() {
     final hero = tester.widget<Text>(find.text('DITHER KIT / FLUTTER'));
     expect(hero.style?.fontFamily, 'JetBrains Mono');
     expect(hero.style?.fontSize, 16.25);
+    expect(
+      Theme.of(
+        tester.element(find.byType(Scaffold)),
+      ).textTheme.bodyMedium?.fontFamily,
+      'JetBrains Mono',
+    );
     expect(find.byType(GridView), findsOneWidget);
     expect(find.byType(DitherCartesianChart), findsNWidgets(2));
     final still =
