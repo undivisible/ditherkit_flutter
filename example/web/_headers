@@ -8,3 +8,7 @@
   Cache-Control: no-store
 /main.dart.js
   Cache-Control: no-store
+/main.dart.mjs
+  Cache-Control: no-store
+/main.dart.wasm
+  Cache-Control: no-store

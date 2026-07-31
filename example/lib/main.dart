@@ -1,5 +1,6 @@
 import 'package:ditherkit_flutter/ditherkit_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 const List<double> _areaValues = [18, 32, 26, 49, 38, 64, 58, 74, 66, 92];
@@ -264,10 +265,9 @@ class _HeroTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const textStyle = TextStyle(
-      color: Color(0xffdeded8),
-      fontFamily: 'monospace',
-      fontSize: 11,
+    final textStyle = GoogleFonts.jetBrainsMono(
+      color: const Color(0xffdeded8),
+      fontSize: 13.75,
       height: 1.25,
     );
     return DecoratedBox(
@@ -281,13 +281,12 @@ class _HeroTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
+            Text(
               'DITHER KIT / FLUTTER',
-              style: TextStyle(
-                color: Color(0xfff5f5f0),
-                fontFamily: 'monospace',
+              style: GoogleFonts.jetBrainsMono(
+                color: const Color(0xfff5f5f0),
                 fontWeight: FontWeight.w700,
-                fontSize: 13,
+                fontSize: 16.25,
                 letterSpacing: 0.8,
               ),
             ),
@@ -346,9 +345,8 @@ class _HeroLink extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
         minimumSize: Size.zero,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        textStyle: const TextStyle(
-          fontFamily: 'monospace',
-          fontSize: 11,
+        textStyle: GoogleFonts.jetBrainsMono(
+          fontSize: 13.75,
           fontWeight: FontWeight.w700,
           letterSpacing: 0.3,
         ),

@@ -14,8 +14,8 @@ void main() {
 
     expect(worker, contains('self.registration.unregister()'));
     expect(worker, isNot(contains('client.navigate')));
-    expect(index, contains('flutter_bootstrap.js?shell=2'));
-    expect(bootstrap, contains('main.dart.js?shell=2'));
+    expect(index, contains('flutter_bootstrap.js?shell=3'));
+    expect(bootstrap, contains("mainWasmPath += '?shell=3'"));
     for (final path in [
       '/',
       '/index.html',
@@ -31,6 +31,9 @@ void main() {
     await tester.pumpWidget(const DitherKitExampleApp());
 
     expect(find.text('DITHER KIT / FLUTTER'), findsOneWidget);
+    final hero = tester.widget<Text>(find.text('DITHER KIT / FLUTTER'));
+    expect(hero.style?.fontFamily, contains('JetBrainsMono'));
+    expect(hero.style?.fontSize, 16.25);
     expect(find.byType(GridView), findsOneWidget);
     expect(find.byType(DitherCartesianChart), findsNWidgets(2));
     final still =
