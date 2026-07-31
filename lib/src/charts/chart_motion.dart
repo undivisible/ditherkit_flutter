@@ -2,6 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+double quantizedIdlePhase(double value) => (value * 96).floor() / 96;
+
 class DitherChartCanvas extends StatefulWidget {
   const DitherChartCanvas({
     required this.height,
@@ -15,6 +17,7 @@ class DitherChartCanvas extends StatefulWidget {
     this.hovered = false,
     this.onHoverChange,
     this.onSelectionChange,
+    this.overlayPainter,
     super.key,
   });
 
@@ -35,6 +38,13 @@ class DitherChartCanvas extends StatefulWidget {
     double intensity,
   )
   painter;
+  final CustomPainter Function(
+    double reveal,
+    double? idlePhase,
+    int? markerIndex,
+    double intensity,
+  )?
+  overlayPainter;
 
   @override
   State<DitherChartCanvas> createState() => _DitherChartCanvasState();
@@ -152,6 +162,19 @@ class _DitherChartCanvasState extends State<DitherChartCanvas>
         child: LayoutBuilder(
           builder: (context, constraints) {
             final size = Size(constraints.maxWidth, constraints.maxHeight);
+            final reveal = _reducedMotion == true || !widget.animate
+                ? 1.0
+                : Curves.easeOutCubic.transform(_entrance.value);
+            final idlePhase = _reducedMotion == true || !widget.animate
+                ? null
+                : _idle.isAnimating
+                ? quantizedIdlePhase(_idle.value)
+                : null;
+            final markerIndex =
+                _hoverIndex ?? widget.markerIndex ?? _selectedIndex;
+            final intensity = _reducedMotion == true
+                ? (widget.hovered ? 1.0 : 0.0)
+                : math.max(_hover.value, widget.hovered ? 1.0 : 0.0);
             return MouseRegion(
               onExit: widget.interactive ? (_) => _clearHover() : null,
               child: Listener(
@@ -165,26 +188,30 @@ class _DitherChartCanvasState extends State<DitherChartCanvas>
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: widget.interactive ? _select : null,
-                  child: CustomPaint(
-                    isComplex: true,
-                    painter: widget.painter(
-                      _reducedMotion == true || !widget.animate
-                          ? 1
-                          : Curves.easeOutCubic.transform(_entrance.value),
-                      _reducedMotion == true || !widget.animate
-                          ? null
-                          : _idle.isAnimating
-                          ? _idle.value
-                          : null,
-                      _hoverIndex ?? widget.markerIndex ?? _selectedIndex,
-                      _reducedMotion == true
-                          ? (widget.hovered ? 1 : 0)
-                          : math.max(_hover.value, widget.hovered ? 1 : 0),
-                    ),
-                    willChange:
-                        _entrance.isAnimating ||
-                        _idle.isAnimating ||
-                        _hover.isAnimating,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      CustomPaint(
+                        isComplex: true,
+                        painter: widget.painter(
+                          reveal,
+                          widget.overlayPainter == null ? idlePhase : null,
+                          widget.overlayPainter == null ? markerIndex : null,
+                          intensity,
+                        ),
+                        willChange: _entrance.isAnimating || _hover.isAnimating,
+                      ),
+                      if (widget.overlayPainter case final overlay?)
+                        CustomPaint(
+                          painter: overlay(
+                            reveal,
+                            idlePhase,
+                            markerIndex,
+                            intensity,
+                          ),
+                          willChange: _idle.isAnimating,
+                        ),
+                    ],
                   ),
                 ),
               ),

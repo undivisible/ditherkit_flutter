@@ -1,3 +1,7 @@
+## 0.1.5
+
+- Isolate animated overlays, cap idle repaints, and reuse Cartesian layouts.
+
 ## 0.1.4
 
 - Batch identical dither cells into paths to prevent web renderer stalls.

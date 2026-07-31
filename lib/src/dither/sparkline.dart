@@ -47,6 +47,14 @@ class DitherSparkline extends StatelessWidget {
       hovered: hovered,
       onHoverChange: onHoverChange,
       onSelectionChange: onSelectionChange,
+      overlayPainter: (reveal, idlePhase, markerIndex, hoverIntensity) =>
+          _SparklineOverlayPainter(
+            values: values,
+            color: color,
+            reveal: reveal,
+            idlePhase: idlePhase,
+            markerIndex: markerIndex,
+          ),
       painter: (reveal, idlePhase, markerIndex, hoverIntensity) =>
           _SparklinePainter(
             values: values,
@@ -58,6 +66,44 @@ class DitherSparkline extends StatelessWidget {
             markerIndex: markerIndex,
           ),
     );
+  }
+}
+
+class _SparklineOverlayPainter extends CustomPainter {
+  _SparklineOverlayPainter({
+    required this.values,
+    required this.color,
+    required this.reveal,
+    required this.idlePhase,
+    required this.markerIndex,
+  });
+
+  final List<double> values;
+  final DitherColor color;
+  final double reveal;
+  final double? idlePhase;
+  final int? markerIndex;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    paintSparklineOverlay(
+      canvas,
+      size,
+      values: values,
+      color: color,
+      reveal: reveal,
+      idlePhase: idlePhase,
+      markerIndex: markerIndex,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _SparklineOverlayPainter oldDelegate) {
+    return oldDelegate.values != values ||
+        oldDelegate.color != color ||
+        oldDelegate.reveal != reveal ||
+        oldDelegate.idlePhase != idlePhase ||
+        oldDelegate.markerIndex != markerIndex;
   }
 }
 

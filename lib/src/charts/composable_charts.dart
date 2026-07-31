@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../dither/dither_paint.dart';
 import '../dither/palette.dart';
 import '../dither/primitives.dart';
+import 'chart_motion.dart';
 
 typedef DitherChartRow = Map<String, Object?>;
 
@@ -101,6 +102,17 @@ class _DitherCartesianChartState extends State<DitherCartesianChart>
   String? _hoverSeries;
   String? _selected;
   bool _pointerInside = false;
+  late _CartesianLayout _layout;
+
+  @override
+  void initState() {
+    super.initState();
+    _layout = _CartesianLayout.from(
+      widget.data,
+      widget.series,
+      widget.stackType,
+    );
+  }
 
   @override
   void didChangeDependencies() {
@@ -114,7 +126,16 @@ class _DitherCartesianChartState extends State<DitherCartesianChart>
   @override
   void didUpdateWidget(covariant DitherCartesianChart oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (_cartesianSignature(oldWidget) != _cartesianSignature(widget) ||
+    final dataChanged =
+        _cartesianSignature(oldWidget) != _cartesianSignature(widget);
+    if (dataChanged) {
+      _layout = _CartesianLayout.from(
+        widget.data,
+        widget.series,
+        widget.stackType,
+      );
+    }
+    if (dataChanged ||
         oldWidget.replayToken != widget.replayToken ||
         oldWidget.animate != widget.animate ||
         oldWidget.animationDuration != widget.animationDuration) {
@@ -159,12 +180,7 @@ class _DitherCartesianChartState extends State<DitherCartesianChart>
     if (!widget.interactive || widget.data.isEmpty) return;
     final plot = _plotRect(size, widget.showAxes);
     final index = _nearestIndex(position.dx, plot, widget.data.length);
-    final layout = _CartesianLayout.from(
-      widget.data,
-      widget.series,
-      widget.stackType,
-    );
-    final series = _nearestSeries(position, plot, layout, widget.kind);
+    final series = _nearestSeries(position, plot, _layout, widget.kind);
     if (_hoverIndex == index && _hoverSeries == series?.dataKey) return;
     setState(() {
       _hoverIndex = index;
@@ -210,26 +226,21 @@ class _DitherCartesianChartState extends State<DitherCartesianChart>
     final selected = widget.selectedDataKey ?? _selected;
     final visibleHover = widget.markerIndex ?? _hoverIndex;
     final reduced = _reducedMotion == true || !widget.animate;
-    final layout = _CartesianLayout.from(
-      widget.data,
-      widget.series,
-      widget.stackType,
-    );
     final chart = AnimatedBuilder(
       animation: Listenable.merge([_entrance, _idle]),
       builder: (context, child) => LayoutBuilder(
         builder: (context, constraints) {
           final size = Size(constraints.maxWidth, constraints.maxHeight);
           final painter = _CartesianPainter(
-            layout: layout,
+            layout: _layout,
             kind: widget.kind,
             showGrid: widget.showGrid,
             showAxes: widget.showAxes,
             reveal: reduced
                 ? 1
                 : Curves.easeInOutCubic.transform(_entrance.value),
-            idlePhase: reduced || !_idle.isAnimating ? null : _idle.value,
-            hovered: visibleHover,
+            idlePhase: null,
+            hovered: null,
             hoveredSeries: _hoverSeries,
             selected: selected,
             intensity: widget.hovered || _pointerInside ? 1 : 0,
@@ -237,6 +248,27 @@ class _DitherCartesianChartState extends State<DitherCartesianChart>
             bloomOnHover: widget.bloomOnHover,
             pointerInside: _pointerInside || widget.hovered,
             referenceLine: widget.referenceLine,
+          );
+          final overlayPainter = _CartesianPainter(
+            layout: _layout,
+            kind: widget.kind,
+            showGrid: false,
+            showAxes: widget.showAxes,
+            reveal: reduced
+                ? 1
+                : Curves.easeInOutCubic.transform(_entrance.value),
+            idlePhase: reduced || !_idle.isAnimating
+                ? null
+                : quantizedIdlePhase(_idle.value),
+            hovered: visibleHover,
+            hoveredSeries: _hoverSeries,
+            selected: selected,
+            intensity: 0,
+            bloom: DitherBloom.off,
+            bloomOnHover: false,
+            pointerInside: _pointerInside || widget.hovered,
+            referenceLine: null,
+            overlayOnly: true,
           );
           return MouseRegion(
             onEnter: widget.interactive ? (_) => _enter() : null,
@@ -265,13 +297,19 @@ class _DitherCartesianChartState extends State<DitherCartesianChart>
                       size: Size.infinite,
                       isComplex: true,
                       painter: painter,
-                      willChange: _entrance.isAnimating || _idle.isAnimating,
+                      willChange: _entrance.isAnimating,
                     ),
+                    if (_idle.isAnimating || visibleHover != null)
+                      CustomPaint(
+                        size: Size.infinite,
+                        painter: overlayPainter,
+                        willChange: _idle.isAnimating,
+                      ),
                     if (widget.showTooltip &&
                         visibleHover != null &&
                         widget.data.isNotEmpty)
                       _CartesianTooltip(
-                        layout: layout,
+                        layout: _layout,
                         index: visibleHover.clamp(0, widget.data.length - 1),
                         labelKey: widget.labelKey,
                         selected: selected,
@@ -419,6 +457,7 @@ class _CartesianPainter extends CustomPainter {
     required this.bloomOnHover,
     required this.pointerInside,
     required this.referenceLine,
+    this.overlayOnly = false,
   });
 
   final _CartesianLayout layout;
@@ -435,12 +474,17 @@ class _CartesianPainter extends CustomPainter {
   final bool bloomOnHover;
   final bool pointerInside;
   final DitherReferenceLine? referenceLine;
+  final bool overlayOnly;
 
   @override
   void paint(Canvas canvas, Size size) {
     if (layout.data.isEmpty || size.isEmpty) return;
     final plot = _plotRect(size, showAxes);
     if (plot.width <= 0 || plot.height <= 0) return;
+    if (overlayOnly) {
+      _paintOverlay(canvas, plot);
+      return;
+    }
     canvas.save();
     canvas.clipRect(plot);
     if (showGrid) _paintGrid(canvas, plot);
@@ -511,6 +555,59 @@ class _CartesianPainter extends CustomPainter {
       _paintHover(canvas, plot, hovered!.clamp(0, layout.data.length - 1));
     canvas.restore();
     if (showAxes) _paintAxes(canvas, size, plot);
+  }
+
+  void _paintOverlay(Canvas canvas, Rect plot) {
+    canvas.save();
+    canvas.clipRect(plot);
+    if (idlePhase != null && kind != DitherChartKind.bar) {
+      final selectedKey = selected ?? hoveredSeries;
+      for (final series in layout.series) {
+        final bands = layout.bands[series.dataKey]!;
+        final backing = backingSize(plot.width, plot.height);
+        final top = List<int>.generate(backing.cols, (column) {
+          final source = _interpolateBand(
+            bands,
+            column / math.max(1, backing.cols - 1),
+          );
+          return ((_y(source.high, plot, layout) - plot.top) /
+                  plot.height *
+                  (backing.rows - 1))
+              .round()
+              .clamp(0, backing.rows - 1);
+        });
+        final floor = List<int>.generate(backing.cols, (column) {
+          final source = _interpolateBand(
+            bands,
+            column / math.max(1, backing.cols - 1),
+          );
+          final value = kind == DitherChartKind.line
+              ? source.high - (layout.max - layout.min) * 0.12
+              : source.low;
+          return ((_y(value, plot, layout) - plot.top) /
+                  plot.height *
+                  (backing.rows - 1))
+              .round()
+              .clamp(0, backing.rows - 1);
+        });
+        canvas.save();
+        canvas.translate(plot.left, plot.top);
+        canvas.scale(plot.width / backing.cols, plot.height / backing.rows);
+        _paintStars(
+          canvas,
+          top,
+          floor,
+          series,
+          (backing.cols * reveal).ceil(),
+          selectedKey != null && selectedKey != series.dataKey ? 0.3 : 1,
+        );
+        canvas.restore();
+      }
+    }
+    if (hovered != null) {
+      _paintHover(canvas, plot, hovered!.clamp(0, layout.data.length - 1));
+    }
+    canvas.restore();
   }
 
   void _paintGrid(Canvas canvas, Rect plot) {
@@ -795,7 +892,8 @@ class _CartesianPainter extends CustomPainter {
         oldDelegate.bloom != bloom ||
         oldDelegate.bloomOnHover != bloomOnHover ||
         oldDelegate.pointerInside != pointerInside ||
-        oldDelegate.referenceLine != referenceLine;
+        oldDelegate.referenceLine != referenceLine ||
+        oldDelegate.overlayOnly != overlayOnly;
   }
 }
 

@@ -2,7 +2,7 @@ name: ditherkit_flutter
 description: >-
   Ordered-dither charts, painting primitives, palettes, and sparklines for
   Flutter.
-version: 0.1.4
+version: 0.1.5
 homepage: https://github.com/undivisible/ditherkit_flutter
 repository: https://github.com/undivisible/ditherkit_flutter
 issue_tracker: https://github.com/undivisible/ditherkit_flutter/issues

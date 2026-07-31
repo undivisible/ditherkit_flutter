@@ -51,6 +51,14 @@ class DitherAreaChart extends StatelessWidget {
       hovered: hovered,
       onHoverChange: onHoverChange,
       onSelectionChange: onSelectionChange,
+      overlayPainter: (reveal, idlePhase, markerIndex, hoverIntensity) =>
+          DitherAreaOverlayPainter(
+            values: values,
+            color: color,
+            reveal: reveal,
+            idlePhase: idlePhase,
+            markerIndex: markerIndex,
+          ),
       painter: (reveal, idlePhase, markerIndex, hoverIntensity) =>
           DitherAreaPainter(
             values: values,
@@ -62,6 +70,44 @@ class DitherAreaChart extends StatelessWidget {
             markerIndex: markerIndex,
           ),
     );
+  }
+}
+
+class DitherAreaOverlayPainter extends CustomPainter {
+  DitherAreaOverlayPainter({
+    required this.values,
+    required this.color,
+    required this.reveal,
+    required this.idlePhase,
+    required this.markerIndex,
+  });
+
+  final List<double> values;
+  final DitherColor color;
+  final double reveal;
+  final double? idlePhase;
+  final int? markerIndex;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    paintSparklineOverlay(
+      canvas,
+      size,
+      values: values,
+      color: color,
+      reveal: reveal,
+      idlePhase: idlePhase,
+      markerIndex: markerIndex,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant DitherAreaOverlayPainter oldDelegate) {
+    return oldDelegate.values != values ||
+        oldDelegate.color != color ||
+        oldDelegate.reveal != reveal ||
+        oldDelegate.idlePhase != idlePhase ||
+        oldDelegate.markerIndex != markerIndex;
   }
 }
 

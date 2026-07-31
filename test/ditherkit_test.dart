@@ -1,8 +1,19 @@
 import 'dart:ui' show PointerDeviceKind;
 
 import 'package:ditherkit_flutter/ditherkit_flutter.dart';
+import 'package:ditherkit_flutter/src/charts/area_chart.dart'
+    show DitherAreaOverlayPainter;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+Finder _areaPaint() => find.byWidgetPredicate(
+  (widget) => widget is CustomPaint && widget.painter is DitherAreaPainter,
+);
+
+Finder _areaOverlayPaint() => find.byWidgetPredicate(
+  (widget) =>
+      widget is CustomPaint && widget.painter is DitherAreaOverlayPainter,
+);
 
 void main() {
   test('parseSparklineValues accepts comma and space separated lists', () {
@@ -98,15 +109,7 @@ void main() {
       ),
     );
     final painter =
-        tester
-                .widget<CustomPaint>(
-                  find.descendant(
-                    of: find.byType(DitherAreaChart),
-                    matching: find.byType(CustomPaint),
-                  ),
-                )
-                .painter
-            as DitherAreaPainter;
+        tester.widget<CustomPaint>(_areaPaint()).painter as DitherAreaPainter;
     expect(painter.reveal, 1);
     expect(painter.idlePhase, isNull);
   });
@@ -125,15 +128,8 @@ void main() {
     await tester.pump();
 
     final hovered =
-        tester
-                .widget<CustomPaint>(
-                  find.descendant(
-                    of: find.byType(DitherAreaChart),
-                    matching: find.byType(CustomPaint),
-                  ),
-                )
-                .painter
-            as DitherAreaPainter;
+        tester.widget<CustomPaint>(_areaOverlayPaint()).painter
+            as DitherAreaOverlayPainter;
     expect(hovered.markerIndex, isNotNull);
 
     await tester.tapAt(const Offset(220, 60));
@@ -141,15 +137,8 @@ void main() {
     await tester.pump();
 
     final locked =
-        tester
-                .widget<CustomPaint>(
-                  find.descendant(
-                    of: find.byType(DitherAreaChart),
-                    matching: find.byType(CustomPaint),
-                  ),
-                )
-                .painter
-            as DitherAreaPainter;
+        tester.widget<CustomPaint>(_areaOverlayPaint()).painter
+            as DitherAreaOverlayPainter;
     expect(locked.markerIndex, equals(hovered.markerIndex));
 
     await tester.pumpWidget(
@@ -160,15 +149,7 @@ void main() {
       ),
     );
     final replaying =
-        tester
-                .widget<CustomPaint>(
-                  find.descendant(
-                    of: find.byType(DitherAreaChart),
-                    matching: find.byType(CustomPaint),
-                  ),
-                )
-                .painter
-            as DitherAreaPainter;
+        tester.widget<CustomPaint>(_areaPaint()).painter as DitherAreaPainter;
     expect(replaying.reveal, lessThan(1));
   });
 
@@ -187,15 +168,7 @@ void main() {
       ),
     );
     final painter =
-        tester
-                .widget<CustomPaint>(
-                  find.descendant(
-                    of: find.byType(DitherAreaChart),
-                    matching: find.byType(CustomPaint),
-                  ),
-                )
-                .painter
-            as DitherAreaPainter;
+        tester.widget<CustomPaint>(_areaPaint()).painter as DitherAreaPainter;
     expect(painter.reveal, 1);
   });
 
@@ -207,42 +180,18 @@ void main() {
     );
     await tester.pump(const Duration(seconds: 1));
     final resting =
-        tester
-                .widget<CustomPaint>(
-                  find.descendant(
-                    of: find.byType(DitherAreaChart),
-                    matching: find.byType(CustomPaint),
-                  ),
-                )
-                .painter
-            as DitherAreaPainter;
+        tester.widget<CustomPaint>(_areaOverlayPaint()).painter
+            as DitherAreaOverlayPainter;
     expect(resting.idlePhase, isNull);
-    expect(
-      tester
-          .widget<CustomPaint>(
-            find.descendant(
-              of: find.byType(DitherAreaChart),
-              matching: find.byType(CustomPaint),
-            ),
-          )
-          .isComplex,
-      isTrue,
-    );
+    expect(tester.widget<CustomPaint>(_areaPaint()).isComplex, isTrue);
 
     final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
     await gesture.addPointer(location: const Offset(0, 0));
     await gesture.moveTo(const Offset(220, 60));
     await tester.pump();
     final active =
-        tester
-                .widget<CustomPaint>(
-                  find.descendant(
-                    of: find.byType(DitherAreaChart),
-                    matching: find.byType(CustomPaint),
-                  ),
-                )
-                .painter
-            as DitherAreaPainter;
+        tester.widget<CustomPaint>(_areaOverlayPaint()).painter
+            as DitherAreaOverlayPainter;
     expect(active.idlePhase, isNotNull);
   });
 
@@ -256,26 +205,10 @@ void main() {
       ),
     );
     final before =
-        tester
-                .widget<CustomPaint>(
-                  find.descendant(
-                    of: find.byType(DitherAreaChart),
-                    matching: find.byType(CustomPaint),
-                  ),
-                )
-                .painter
-            as DitherAreaPainter;
+        tester.widget<CustomPaint>(_areaPaint()).painter as DitherAreaPainter;
     await tester.pump(const Duration(seconds: 2));
     final after =
-        tester
-                .widget<CustomPaint>(
-                  find.descendant(
-                    of: find.byType(DitherAreaChart),
-                    matching: find.byType(CustomPaint),
-                  ),
-                )
-                .painter
-            as DitherAreaPainter;
+        tester.widget<CustomPaint>(_areaPaint()).painter as DitherAreaPainter;
     expect(after.reveal, before.reveal);
     expect(after.idlePhase, before.idlePhase);
   });

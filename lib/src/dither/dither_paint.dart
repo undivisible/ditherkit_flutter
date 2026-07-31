@@ -188,6 +188,68 @@ void paintSparkline(
     );
   }
   batch.draw(canvas);
+  _paintSparklineOverlay(
+    canvas,
+    values,
+    seed,
+    tops,
+    cols,
+    rows,
+    visibleCols,
+    idlePhase,
+    markerIndex,
+  );
+  canvas.restore();
+}
+
+void paintSparklineOverlay(
+  Canvas canvas,
+  Size size, {
+  required List<double> values,
+  required DitherColor color,
+  double reveal = 1,
+  double? idlePhase,
+  int? markerIndex,
+}) {
+  if (values.isEmpty || size.width <= 0 || size.height <= 0) return;
+  final backing = backingSize(size.width, size.height);
+  final cols = backing.cols;
+  final rows = backing.rows;
+  final min = values.reduce(math.min);
+  final max = values.reduce(math.max);
+  final span = math.max(max - min, 1e-9);
+  final resampled = resampleSeries(values, cols);
+  final tops = List<int>.generate(cols, (x) {
+    final normalized = (resampled[x] - min) / span;
+    return (rows - 1 - normalized * (rows - 1)).round().clamp(0, rows - 1);
+  });
+  canvas.save();
+  canvas.scale(size.width / cols, size.height / rows);
+  _paintSparklineOverlay(
+    canvas,
+    values,
+    seedOf(color),
+    tops,
+    cols,
+    rows,
+    (cols * clamp01(reveal)).ceil(),
+    idlePhase,
+    markerIndex,
+  );
+  canvas.restore();
+}
+
+void _paintSparklineOverlay(
+  Canvas canvas,
+  List<double> values,
+  DitherSeed seed,
+  List<int> tops,
+  int cols,
+  int rows,
+  int visibleCols,
+  double? idlePhase,
+  int? markerIndex,
+) {
   if (idlePhase != null) {
     final (fillR, _, _) = seed.fill;
     final star = Paint()..color = ditherRgb(seed.starOrFill);
@@ -234,5 +296,4 @@ void paintSparkline(
       );
     }
   }
-  canvas.restore();
 }
