@@ -263,6 +263,7 @@ class _DitherCartesianChartState extends State<DitherCartesianChart>
                   children: [
                     CustomPaint(
                       size: Size.infinite,
+                      isComplex: true,
                       painter: painter,
                       willChange: _entrance.isAnimating || _idle.isAnimating,
                     ),

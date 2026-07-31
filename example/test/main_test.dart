@@ -4,11 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('scrolls through the dither kit grid', (tester) async {
+  testWidgets('renders a static dither kit grid', (tester) async {
     await tester.pumpWidget(const DitherKitExampleApp());
 
-    expect(find.text('DITHER KIT'), findsOneWidget);
-    expect(find.text('Weekly activity'), findsOneWidget);
+    expect(find.text('DITHER KIT / FLUTTER'), findsOneWidget);
+    expect(find.byType(GridView), findsOneWidget);
+    expect(find.byType(DitherCartesianChart), findsNWidgets(2));
     final still =
         tester
                 .widget<CustomPaint>(
@@ -21,7 +22,7 @@ void main() {
             as DitherAreaPainter;
     expect(still.reveal, 1);
 
-    await tester.tap(find.text('Replay entrance'));
+    await tester.tap(find.widgetWithText(TextButton, 'REPLAY'));
     await tester.pump();
     final replaying =
         tester
@@ -34,17 +35,5 @@ void main() {
                 .painter
             as DitherAreaPainter;
     expect(replaying.reveal, lessThan(1));
-
-    await tester.scrollUntilVisible(find.text('Release cadence'), 500);
-    expect(find.text('Release cadence'), findsOneWidget);
-
-    await tester.scrollUntilVisible(find.text('Live signal'), 500);
-    expect(find.text('Live signal'), findsOneWidget);
-
-    await tester.scrollUntilVisible(find.text('Build mix'), 500);
-    expect(find.text('Build mix'), findsOneWidget);
-
-    await tester.scrollUntilVisible(find.text('Primitives'), 500);
-    expect(find.text('Primitives'), findsOneWidget);
   });
 }

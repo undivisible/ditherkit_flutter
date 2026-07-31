@@ -166,6 +166,7 @@ class _DitherChartCanvasState extends State<DitherChartCanvas>
                   behavior: HitTestBehavior.opaque,
                   onTap: widget.interactive ? _select : null,
                   child: CustomPaint(
+                    isComplex: true,
                     painter: widget.painter(
                       _reducedMotion == true || !widget.animate
                           ? 1

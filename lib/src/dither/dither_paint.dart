@@ -1,6 +1,5 @@
 import 'dart:math' as math;
 import 'dart:ui';
-import 'dart:typed_data';
 
 import 'palette.dart';
 
@@ -22,7 +21,6 @@ const maxCols = 520;
 const maxRows = 200;
 const borderAlpha = 0.72;
 const offTier = 0.4;
-const _alphaSteps = 16;
 
 double clamp01(double value) => value < 0
     ? 0
@@ -77,12 +75,6 @@ void paintDitherColumn(
       (variant == DitherVariant.dotted ? 0.12 : 0) +
       (stacked ? 0.2 : 0) -
       sparse;
-  final points = List<Float32List?>.filled(_alphaSteps, null);
-  final counts = List<int>.filled(_alphaSteps, 0);
-  final paint = Paint()
-    ..isAntiAlias = false
-    ..strokeCap = StrokeCap.square
-    ..strokeWidth = 1;
   for (var y = t; y < f; y++) {
     var density = (y - t) / depth;
     if (stacked) density = 0.5 + 0.5 * density;
@@ -93,26 +85,8 @@ void paintDitherColumn(
     if (variant == DitherVariant.dotted && !lit) continue;
     final k = (0.3 + density * 0.7) * (1 + 0.22 * intensity);
     final alpha = clamp01((lit ? k : k * offTier) * dim);
-    final bucket = (alpha * (_alphaSteps - 1)).round();
-    final bucketPoints = points[bucket] ??= Float32List(depth * 2);
-    final point = counts[bucket]++ * 2;
-    bucketPoints[point] = x + 0.5;
-    bucketPoints[point + 1] = y + 0.5;
-  }
-  for (var bucket = 0; bucket < _alphaSteps; bucket++) {
-    final count = counts[bucket];
-    final bucketPoints = points[bucket];
-    if (count == 0 || bucketPoints == null) continue;
-    paint.color = fill.withValues(alpha: bucket / (_alphaSteps - 1));
-    canvas.drawRawPoints(
-      PointMode.points,
-      Float32List.view(
-        bucketPoints.buffer,
-        bucketPoints.offsetInBytes,
-        count * 2,
-      ),
-      paint,
-    );
+    final paint = Paint()..color = fill.withValues(alpha: alpha);
+    canvas.drawRect(Rect.fromLTWH(x.toDouble(), y.toDouble(), 1, 1), paint);
   }
   final edge = Paint()..color = fill.withValues(alpha: borderAlpha * dim);
   canvas.drawRect(Rect.fromLTWH(x.toDouble(), t.toDouble(), 1, 1), edge);

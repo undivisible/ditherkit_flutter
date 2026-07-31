@@ -1,3 +1,7 @@
+## 0.1.3
+
+- Preserve the original dither-cell geometry while caching static chart layers.
+
 ## 0.1.2
 
 - Batch dither pixels and keep the web demo responsive on first load.

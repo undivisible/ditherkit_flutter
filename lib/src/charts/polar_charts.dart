@@ -152,6 +152,8 @@ class _DitherPieChartState extends State<DitherPieChart>
                   onTap: widget.interactive ? _select : null,
                   child: CustomPaint(
                     size: Size.infinite,
+                    isComplex: true,
+                    willChange: _controller.isAnimating,
                     painter: _PiePainter(
                       widget.data,
                       widget.innerRadius,
@@ -475,6 +477,8 @@ class _DitherRadarChartState extends State<DitherRadarChart>
                       : null,
                   child: CustomPaint(
                     size: Size.infinite,
+                    isComplex: true,
+                    willChange: _controller.isAnimating,
                     painter: _RadarPainter(
                       widget.data,
                       widget.series,

@@ -217,6 +217,17 @@ void main() {
                 .painter
             as DitherAreaPainter;
     expect(resting.idlePhase, isNull);
+    expect(
+      tester
+          .widget<CustomPaint>(
+            find.descendant(
+              of: find.byType(DitherAreaChart),
+              matching: find.byType(CustomPaint),
+            ),
+          )
+          .isComplex,
+      isTrue,
+    );
 
     final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
     await gesture.addPointer(location: const Offset(0, 0));
