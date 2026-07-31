@@ -9,9 +9,13 @@ void main() {
   test('web shell clears stale workers without reloading clients', () {
     final worker = File('web/flutter_service_worker.js').readAsStringSync();
     final headers = File('web/_headers').readAsStringSync();
+    final index = File('web/index.html').readAsStringSync();
+    final bootstrap = File('web/flutter_bootstrap.js').readAsStringSync();
 
     expect(worker, contains('self.registration.unregister()'));
     expect(worker, isNot(contains('client.navigate')));
+    expect(index, contains('flutter_bootstrap.js?shell=2'));
+    expect(bootstrap, contains('main.dart.js?shell=2'));
     for (final path in [
       '/',
       '/index.html',
