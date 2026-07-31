@@ -460,6 +460,7 @@ class _GradientPainter extends CustomPainter {
     }
     canvas.save();
     canvas.scale(scaleX, scaleY);
+    final batch = DitherRectBatch();
     for (var y = 0; y < rows; y++) {
       for (var x = 0; x < cols; x++) {
         final t = switch (direction) {
@@ -477,12 +478,13 @@ class _GradientPainter extends CustomPainter {
             ? (lit ? 0.35 + 0.65 * density : 0.12 * density) * opacity
             : opacity;
         if (alpha <= 0.004) continue;
-        canvas.drawRect(
+        batch.add(
           Rect.fromLTWH(x.toDouble(), y.toDouble(), 1, 1),
-          Paint()..color = color.withValues(alpha: alpha),
+          color.withValues(alpha: alpha),
         );
       }
     }
+    batch.draw(canvas);
     canvas.restore();
   }
 

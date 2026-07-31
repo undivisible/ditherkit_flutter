@@ -1,3 +1,7 @@
+## 0.1.4
+
+- Batch identical dither cells into paths to prevent web renderer stalls.
+
 ## 0.1.3
 
 - Preserve the original dither-cell geometry while caching static chart layers.

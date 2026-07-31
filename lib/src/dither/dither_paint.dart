@@ -28,6 +28,38 @@ double clamp01(double value) => value < 0
     ? 1
     : value;
 
+class DitherRectBatch {
+  final _paths = <int, Path>{};
+  final _colors = <int, Color>{};
+
+  void add(Rect rect, Color color) {
+    final key = color.toARGB32();
+    (_paths[key] ??= Path()).addRect(rect);
+    _colors[key] ??= color;
+  }
+
+  void draw(Canvas canvas) {
+    final paint = Paint();
+    for (final entry in _paths.entries) {
+      paint.color = _colors[entry.key]!;
+      canvas.drawPath(entry.value, paint);
+    }
+  }
+}
+
+void _drawDitherRect(
+  Canvas canvas,
+  DitherRectBatch? batch,
+  Rect rect,
+  Color color,
+) {
+  if (batch == null) {
+    canvas.drawRect(rect, Paint()..color = color);
+  } else {
+    batch.add(rect, color);
+  }
+}
+
 ({int cols, int rows}) backingSize(double width, double height) {
   return (
     cols: math.min(maxCols, math.max(8, (width / cellSize).round())),
@@ -61,14 +93,19 @@ void paintDitherColumn(
   double dim = 1,
   bool stacked = false,
   double sparse = 0,
+  DitherRectBatch? batch,
 }) {
   final t = top.round();
   final f = floor.round();
   final depth = f - t;
   final fill = ditherRgb(seed.fill);
   if (depth <= 0) {
-    final paint = Paint()..color = fill.withValues(alpha: borderAlpha * dim);
-    canvas.drawRect(Rect.fromLTWH(x.toDouble(), t.toDouble(), 1, 1), paint);
+    _drawDitherRect(
+      canvas,
+      batch,
+      Rect.fromLTWH(x.toDouble(), t.toDouble(), 1, 1),
+      fill.withValues(alpha: borderAlpha * dim),
+    );
     return;
   }
   final bias =
@@ -85,17 +122,25 @@ void paintDitherColumn(
     if (variant == DitherVariant.dotted && !lit) continue;
     final k = (0.3 + density * 0.7) * (1 + 0.22 * intensity);
     final alpha = clamp01((lit ? k : k * offTier) * dim);
-    final paint = Paint()..color = fill.withValues(alpha: alpha);
-    canvas.drawRect(Rect.fromLTWH(x.toDouble(), y.toDouble(), 1, 1), paint);
+    _drawDitherRect(
+      canvas,
+      batch,
+      Rect.fromLTWH(x.toDouble(), y.toDouble(), 1, 1),
+      fill.withValues(alpha: alpha),
+    );
   }
-  final edge = Paint()..color = fill.withValues(alpha: borderAlpha * dim);
-  canvas.drawRect(Rect.fromLTWH(x.toDouble(), t.toDouble(), 1, 1), edge);
+  _drawDitherRect(
+    canvas,
+    batch,
+    Rect.fromLTWH(x.toDouble(), t.toDouble(), 1, 1),
+    fill.withValues(alpha: borderAlpha * dim),
+  );
   if (depth > 1) {
-    final feather = Paint()
-      ..color = fill.withValues(alpha: borderAlpha * 0.5 * dim);
-    canvas.drawRect(
+    _drawDitherRect(
+      canvas,
+      batch,
       Rect.fromLTWH(x.toDouble(), (t + 1).toDouble(), 1, 1),
-      feather,
+      fill.withValues(alpha: borderAlpha * 0.5 * dim),
     );
   }
 }
@@ -129,6 +174,7 @@ void paintSparkline(
   canvas.save();
   canvas.scale(size.width / cols, size.height / rows);
   final visibleCols = (cols * clamp01(reveal)).ceil();
+  final batch = DitherRectBatch();
   for (var x = 0; x < visibleCols; x++) {
     paintDitherColumn(
       canvas,
@@ -138,8 +184,10 @@ void paintSparkline(
       seed,
       variant,
       intensity: intensity,
+      batch: batch,
     );
   }
+  batch.draw(canvas);
   if (idlePhase != null) {
     final (fillR, _, _) = seed.fill;
     final star = Paint()..color = ditherRgb(seed.starOrFill);

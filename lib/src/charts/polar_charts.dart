@@ -303,6 +303,7 @@ class _PiePainter extends CustomPainter {
       ..strokeWidth = 1.4;
     final path = _wedge(center, radius, innerRadius, start, end);
     final bounds = path.getBounds();
+    final batch = DitherRectBatch();
     canvas.save();
     canvas.clipPath(path);
     for (var y = bounds.top; y < bounds.bottom; y += cell) {
@@ -324,12 +325,13 @@ class _PiePainter extends CustomPainter {
         final alpha = clamp01(
           (lit ? 1 : offTier) * (0.35 + density * 0.65) * dim,
         );
-        canvas.drawRect(
+        batch.add(
           Rect.fromLTWH(x, y, cell, cell),
-          Paint()..color = fill.withValues(alpha: alpha),
+          fill.withValues(alpha: alpha),
         );
       }
     }
+    batch.draw(canvas);
     canvas.restore();
     canvas.drawPath(path, rim);
   }
@@ -646,6 +648,7 @@ class _RadarPainter extends CustomPainter {
   ) {
     final bounds = path.getBounds();
     final fill = ditherRgb(seedOf(series.color).fill);
+    final batch = DitherRectBatch();
     canvas.save();
     canvas.clipPath(path);
     for (var y = bounds.top; y < bounds.bottom; y += 2) {
@@ -663,17 +666,15 @@ class _RadarPainter extends CustomPainter {
                     layer * 0.2 -
                     (series.variant == DitherVariant.dotted ? 0.12 : 0);
         if (series.variant == DitherVariant.dotted && !lit) continue;
-        canvas.drawRect(
+        batch.add(
           Rect.fromLTWH(x, y, 2, 2),
-          Paint()
-            ..color = fill.withValues(
-              alpha: clamp01(
-                (lit ? 1 : offTier) * (0.32 + density * 0.68) * dim,
-              ),
-            ),
+          fill.withValues(
+            alpha: clamp01((lit ? 1 : offTier) * (0.32 + density * 0.68) * dim),
+          ),
         );
       }
     }
+    batch.draw(canvas);
     canvas.restore();
   }
 

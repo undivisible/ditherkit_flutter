@@ -601,6 +601,7 @@ class _CartesianPainter extends CustomPainter {
     canvas.save();
     canvas.translate(plot.left, plot.top);
     canvas.scale(plot.width / cols, plot.height / rows);
+    final batch = DitherRectBatch();
     for (var x = 0; x < visible; x++) {
       final start = math.min(top[x], floor[x]);
       final end = math.max(top[x], floor[x]);
@@ -613,8 +614,10 @@ class _CartesianPainter extends CustomPainter {
         series.variant,
         intensity: localIntensity,
         dim: dim,
+        batch: batch,
       );
     }
+    batch.draw(canvas);
     if (idlePhase != null)
       _paintStars(canvas, top, floor, series, visible, dim);
     canvas.restore();
@@ -674,6 +677,7 @@ class _CartesianPainter extends CustomPainter {
       canvas.clipRect(rect);
       canvas.translate(rect.left, rect.top);
       canvas.scale(rect.width / backing.cols, rect.height / backing.rows);
+      final batch = DitherRectBatch();
       for (var x = 0; x < backing.cols; x++) {
         paintDitherColumn(
           canvas,
@@ -684,8 +688,10 @@ class _CartesianPainter extends CustomPainter {
           series.variant,
           intensity: localIntensity,
           dim: dim,
+          batch: batch,
         );
       }
+      batch.draw(canvas);
       canvas.restore();
       canvas.drawRect(
         Rect.fromLTRB(

@@ -141,6 +141,7 @@ void paintBarChart(
 
   canvas.save();
   canvas.scale(size.width / cols, size.height / rows);
+  final batch = DitherRectBatch();
   for (var i = 0; i < n; i++) {
     final normalized = (values[i] - min) / span;
     final target = (rows - 1 - normalized * (rows - 1)).round().clamp(
@@ -169,6 +170,7 @@ void paintBarChart(
         variant,
         intensity: intensity + (active ? 0.4 : 0),
         dim: dim,
+        batch: batch,
       );
     }
     if (active) {
@@ -179,6 +181,7 @@ void paintBarChart(
       );
     }
   }
+  batch.draw(canvas);
   canvas.restore();
 }
 
