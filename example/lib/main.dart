@@ -39,6 +39,7 @@ class DitherKitExamplePage extends StatefulWidget {
 class _DitherKitExamplePageState extends State<DitherKitExamplePage> {
   int _replayToken = 0;
   int? _scrubbedIndex;
+  var _animate = false;
 
   @override
   Widget build(BuildContext context) {
@@ -90,7 +91,10 @@ class _DitherKitExamplePageState extends State<DitherKitExamplePage> {
                           const SizedBox(height: 16),
                           DitherButton(
                             color: DitherColor.purple,
-                            onPressed: () => setState(() => _replayToken++),
+                            onPressed: () => setState(() {
+                              _animate = true;
+                              _replayToken++;
+                            }),
                             child: const Text('Replay entrance'),
                           ),
                           const SizedBox(height: 8),
@@ -120,6 +124,7 @@ class _DitherKitExamplePageState extends State<DitherKitExamplePage> {
                       variant: DitherVariant.gradient,
                       height: 220,
                       intensity: 0.35,
+                      animate: _animate,
                       replayToken: _replayToken,
                       onHoverChange: (index) =>
                           setState(() => _scrubbedIndex = index),
@@ -134,6 +139,7 @@ class _DitherKitExamplePageState extends State<DitherKitExamplePage> {
                       variant: DitherVariant.hatched,
                       height: 220,
                       intensity: 0.2,
+                      animate: _animate,
                       replayToken: _replayToken,
                     ),
                   ),
@@ -145,7 +151,7 @@ class _DitherKitExamplePageState extends State<DitherKitExamplePage> {
                       color: DitherColor.green,
                       variant: DitherVariant.dotted,
                       height: 220,
-                      animate: true,
+                      animate: _animate,
                       interactive: true,
                       replayToken: _replayToken,
                     ),
@@ -179,6 +185,7 @@ class _DitherKitExamplePageState extends State<DitherKitExamplePage> {
                       labelKey: 'week',
                       showLegend: true,
                       bloom: DitherBloom.low,
+                      animate: _animate,
                       referenceLine: const DitherReferenceLine(value: 30),
                       replayToken: _replayToken,
                     ),
@@ -197,6 +204,7 @@ class _DitherKitExamplePageState extends State<DitherKitExamplePage> {
                     child: DitherPieChart(
                       height: 220,
                       innerRadius: 0.52,
+                      animate: _animate,
                       replayToken: _replayToken,
                       data: const [
                         DitherPieSlice(
@@ -225,6 +233,7 @@ class _DitherKitExamplePageState extends State<DitherKitExamplePage> {
                     child: DitherRadarChart(
                       height: 220,
                       nameKey: 'skill',
+                      animate: _animate,
                       replayToken: _replayToken,
                       data: const [
                         {'skill': 'speed', 'core': 82, 'edge': 55},
@@ -407,7 +416,7 @@ class _ViewportTickerMode extends StatefulWidget {
 
 class _ViewportTickerModeState extends State<_ViewportTickerMode> {
   ScrollPosition? _position;
-  var _visible = true;
+  var _visible = false;
   var _hovered = false;
   var _scheduled = false;
 
