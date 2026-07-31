@@ -6,25 +6,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('web shell clears stale workers without reloading clients', () {
-    final worker = File('web/flutter_service_worker.js').readAsStringSync();
+  test('web shell caches versioned application assets', () {
     final headers = File('web/_headers').readAsStringSync();
     final index = File('web/index.html').readAsStringSync();
     final bootstrap = File('web/flutter_bootstrap.js').readAsStringSync();
 
-    expect(worker, contains('self.registration.unregister()'));
-    expect(worker, isNot(contains('client.navigate')));
-    expect(index, contains('flutter_bootstrap.js?shell=3'));
-    expect(bootstrap, contains("mainWasmPath += '?shell=3'"));
-    for (final path in [
-      '/',
-      '/index.html',
-      '/flutter_bootstrap.js',
-      '/flutter_service_worker.js',
-      '/main.dart.js',
-    ]) {
-      expect(headers, contains('$path\n  Cache-Control: no-store'));
+    expect(File('web/flutter_service_worker.js').existsSync(), isFalse);
+    expect(index, contains('flutter_bootstrap.js?shell=4'));
+    expect(bootstrap, contains("mainWasmPath += '?shell=4'"));
+    for (final path in ['/main.dart.js', '/main.dart.mjs', '/main.dart.wasm']) {
+      expect(
+        headers,
+        contains('$path\n  Cache-Control: public, max-age=31536000, immutable'),
+      );
     }
+    expect(headers, isNot(contains('Cache-Control: no-store')));
   });
 
   testWidgets('renders a static dither kit grid', (tester) async {
@@ -32,16 +28,17 @@ void main() {
 
     expect(find.text('DITHER KIT / FLUTTER'), findsOneWidget);
     final hero = tester.widget<Text>(find.text('DITHER KIT / FLUTTER'));
-    expect(hero.style?.fontFamily, contains('JetBrainsMono'));
+    expect(hero.style?.fontFamily, 'JetBrains Mono');
     expect(hero.style?.fontSize, 16.25);
     expect(find.byType(GridView), findsOneWidget);
     expect(find.byType(DitherCartesianChart), findsNWidgets(2));
     final still =
         tester
                 .widget<CustomPaint>(
-                  find.descendant(
-                    of: find.byType(DitherAreaChart),
-                    matching: find.byType(CustomPaint),
+                  find.byWidgetPredicate(
+                    (widget) =>
+                        widget is CustomPaint &&
+                        widget.painter is DitherAreaPainter,
                   ),
                 )
                 .painter
@@ -53,9 +50,10 @@ void main() {
     final replaying =
         tester
                 .widget<CustomPaint>(
-                  find.descendant(
-                    of: find.byType(DitherAreaChart),
-                    matching: find.byType(CustomPaint),
+                  find.byWidgetPredicate(
+                    (widget) =>
+                        widget is CustomPaint &&
+                        widget.painter is DitherAreaPainter,
                   ),
                 )
                 .painter

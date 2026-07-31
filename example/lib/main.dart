@@ -1,6 +1,5 @@
 import 'package:ditherkit_flutter/ditherkit_flutter.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 const List<double> _areaValues = [18, 32, 26, 49, 38, 64, 58, 74, 66, 92];
@@ -249,8 +248,10 @@ class _DemoTile extends StatelessWidget {
           color: Color(0xff070707),
           border: Border.fromBorderSide(BorderSide(color: Color(0xff252525))),
         ),
-        child: LayoutBuilder(
-          builder: (context, constraints) => child(constraints.maxHeight),
+        child: RepaintBoundary(
+          child: LayoutBuilder(
+            builder: (context, constraints) => child(constraints.maxHeight),
+          ),
         ),
       ),
     );
@@ -265,8 +266,9 @@ class _HeroTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textStyle = GoogleFonts.jetBrainsMono(
-      color: const Color(0xffdeded8),
+    const textStyle = TextStyle(
+      color: Color(0xffdeded8),
+      fontFamily: 'JetBrains Mono',
       fontSize: 13.75,
       height: 1.25,
     );
@@ -283,8 +285,9 @@ class _HeroTile extends StatelessWidget {
           children: [
             Text(
               'DITHER KIT / FLUTTER',
-              style: GoogleFonts.jetBrainsMono(
-                color: const Color(0xfff5f5f0),
+              style: const TextStyle(
+                color: Color(0xfff5f5f0),
+                fontFamily: 'JetBrains Mono',
                 fontWeight: FontWeight.w700,
                 fontSize: 16.25,
                 letterSpacing: 0.8,
@@ -345,7 +348,8 @@ class _HeroLink extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
         minimumSize: Size.zero,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        textStyle: GoogleFonts.jetBrainsMono(
+        textStyle: const TextStyle(
+          fontFamily: 'JetBrains Mono',
           fontSize: 13.75,
           fontWeight: FontWeight.w700,
           letterSpacing: 0.3,
