@@ -333,7 +333,16 @@ class _PiePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _PiePainter oldDelegate) => true;
+  bool shouldRepaint(covariant _PiePainter oldDelegate) {
+    return oldDelegate.data != data ||
+        oldDelegate.inner != inner ||
+        oldDelegate.reveal != reveal ||
+        oldDelegate.hovered != hovered ||
+        oldDelegate.selected != selected ||
+        oldDelegate.bloom != bloom ||
+        oldDelegate.bloomOnHover != bloomOnHover ||
+        oldDelegate.inside != inside;
+  }
 }
 
 class DitherRadarChart extends StatefulWidget {
@@ -407,6 +416,12 @@ class _DitherRadarChartState extends State<DitherRadarChart>
       _controller.forward(from: 0);
   }
 
+  void _hover(Offset position, Size size) {
+    final next = _radarAxisAt(position, size, widget.data.length);
+    if (_hoverAxis == next) return;
+    setState(() => _hoverAxis = next);
+  }
+
   @override
   void dispose() {
     _controller.dispose();
@@ -436,42 +451,18 @@ class _DitherRadarChartState extends State<DitherRadarChart>
               child: Listener(
                 behavior: HitTestBehavior.opaque,
                 onPointerHover: widget.interactive
-                    ? (event) => setState(
-                        () => _hoverAxis = _radarAxisAt(
-                          event.localPosition,
-                          size,
-                          widget.data.length,
-                        ),
-                      )
+                    ? (event) => _hover(event.localPosition, size)
                     : null,
                 onPointerDown: widget.interactive
-                    ? (event) => setState(
-                        () => _hoverAxis = _radarAxisAt(
-                          event.localPosition,
-                          size,
-                          widget.data.length,
-                        ),
-                      )
+                    ? (event) => _hover(event.localPosition, size)
                     : null,
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onPanDown: widget.interactive
-                      ? (details) => setState(
-                          () => _hoverAxis = _radarAxisAt(
-                            details.localPosition,
-                            size,
-                            widget.data.length,
-                          ),
-                        )
+                      ? (details) => _hover(details.localPosition, size)
                       : null,
                   onPanUpdate: widget.interactive
-                      ? (details) => setState(
-                          () => _hoverAxis = _radarAxisAt(
-                            details.localPosition,
-                            size,
-                            widget.data.length,
-                          ),
-                        )
+                      ? (details) => _hover(details.localPosition, size)
                       : null,
                   onTap: widget.interactive && widget.series.isNotEmpty
                       ? () {
@@ -683,7 +674,17 @@ class _RadarPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _RadarPainter oldDelegate) => true;
+  bool shouldRepaint(covariant _RadarPainter oldDelegate) {
+    return oldDelegate.data != data ||
+        oldDelegate.series != series ||
+        oldDelegate.nameKey != nameKey ||
+        oldDelegate.reveal != reveal ||
+        oldDelegate.hoverAxis != hoverAxis ||
+        oldDelegate.selected != selected ||
+        oldDelegate.bloom != bloom ||
+        oldDelegate.bloomOnHover != bloomOnHover ||
+        oldDelegate.inside != inside;
+  }
 }
 
 Path _wedge(

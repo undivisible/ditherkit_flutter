@@ -10,6 +10,7 @@ class DitherChartCanvas extends StatefulWidget {
     required this.seriesLength,
     required this.painter,
     this.interactive = true,
+    this.idleAnimation = false,
     this.markerIndex,
     this.hovered = false,
     this.onHoverChange,
@@ -22,6 +23,7 @@ class DitherChartCanvas extends StatefulWidget {
   final Object replayKey;
   final int seriesLength;
   final bool interactive;
+  final bool idleAnimation;
   final int? markerIndex;
   final bool hovered;
   final ValueChanged<int?>? onHoverChange;
@@ -72,18 +74,33 @@ class _DitherChartCanvasState extends State<DitherChartCanvas>
         oldWidget.animate != widget.animate) {
       _play();
     }
+    _syncIdle();
   }
 
   void _play() {
     if (!widget.animate || _reducedMotion == true) {
       _entrance.value = 1;
-      _idle.value = 0;
-      _idle.stop();
+      _syncIdle();
       _hover.value = widget.hovered ? 1 : 0;
       return;
     }
     _entrance.forward(from: 0);
-    _idle.repeat();
+    _syncIdle();
+  }
+
+  void _syncIdle() {
+    final active =
+        widget.idleAnimation &&
+        widget.animate &&
+        _reducedMotion != true &&
+        (widget.hovered || _hoverIndex != null);
+    if (active) {
+      if (!_idle.isAnimating) _idle.repeat();
+    } else {
+      _idle
+        ..stop()
+        ..value = 0;
+    }
   }
 
   void _setHover(Offset position, Size size) {
@@ -96,6 +113,7 @@ class _DitherChartCanvasState extends State<DitherChartCanvas>
     if (_hoverIndex != index) {
       setState(() => _hoverIndex = index);
       widget.onHoverChange?.call(index);
+      _syncIdle();
     }
     if (_reducedMotion != true) _hover.forward();
   }
@@ -104,6 +122,7 @@ class _DitherChartCanvasState extends State<DitherChartCanvas>
     if (_hoverIndex != null) {
       setState(() => _hoverIndex = null);
       widget.onHoverChange?.call(null);
+      _syncIdle();
     }
     if (_reducedMotion != true && !widget.hovered) _hover.reverse();
   }
@@ -153,13 +172,18 @@ class _DitherChartCanvasState extends State<DitherChartCanvas>
                           : Curves.easeOutCubic.transform(_entrance.value),
                       _reducedMotion == true || !widget.animate
                           ? null
-                          : _idle.value,
+                          : _idle.isAnimating
+                          ? _idle.value
+                          : null,
                       _hoverIndex ?? widget.markerIndex ?? _selectedIndex,
                       _reducedMotion == true
                           ? (widget.hovered ? 1 : 0)
                           : math.max(_hover.value, widget.hovered ? 1 : 0),
                     ),
-                    willChange: widget.animate && _reducedMotion != true,
+                    willChange:
+                        _entrance.isAnimating ||
+                        _idle.isAnimating ||
+                        _hover.isAnimating,
                   ),
                 ),
               ),

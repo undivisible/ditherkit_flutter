@@ -4,7 +4,7 @@ Ordered-dither charts, polar charts, painting primitives, palettes, and sparklin
 
 ```yaml
 dependencies:
-  ditherkit_flutter: ^0.1.0
+  ditherkit_flutter: ^0.1.1
 ```
 
 ```dart

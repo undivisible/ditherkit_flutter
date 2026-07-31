@@ -120,17 +120,39 @@ class _DitherCartesianChartState extends State<DitherCartesianChart>
         oldWidget.animationDuration != widget.animationDuration) {
       _play();
     }
+    _syncIdle();
   }
 
   void _play() {
     _entrance.duration = widget.animationDuration;
     if (!widget.animate || _reducedMotion == true) {
       _entrance.value = 1;
-      _idle.stop();
+      _syncIdle();
     } else {
       _entrance.forward(from: 0);
-      _idle.repeat();
+      _syncIdle();
     }
+  }
+
+  void _syncIdle() {
+    final active =
+        widget.kind != DitherChartKind.bar &&
+        widget.animate &&
+        _reducedMotion != true &&
+        (widget.hovered || _pointerInside);
+    if (active) {
+      if (!_idle.isAnimating) _idle.repeat();
+    } else {
+      _idle
+        ..stop()
+        ..value = 0;
+    }
+  }
+
+  void _enter() {
+    if (_pointerInside) return;
+    setState(() => _pointerInside = true);
+    _syncIdle();
   }
 
   void _setHover(Offset position, Size size) {
@@ -159,6 +181,7 @@ class _DitherCartesianChartState extends State<DitherCartesianChart>
       _pointerInside = false;
     });
     widget.onHoverChange?.call(null);
+    _syncIdle();
   }
 
   void _select() {
@@ -187,16 +210,16 @@ class _DitherCartesianChartState extends State<DitherCartesianChart>
     final selected = widget.selectedDataKey ?? _selected;
     final visibleHover = widget.markerIndex ?? _hoverIndex;
     final reduced = _reducedMotion == true || !widget.animate;
+    final layout = _CartesianLayout.from(
+      widget.data,
+      widget.series,
+      widget.stackType,
+    );
     final chart = AnimatedBuilder(
       animation: Listenable.merge([_entrance, _idle]),
       builder: (context, child) => LayoutBuilder(
         builder: (context, constraints) {
           final size = Size(constraints.maxWidth, constraints.maxHeight);
-          final layout = _CartesianLayout.from(
-            widget.data,
-            widget.series,
-            widget.stackType,
-          );
           final painter = _CartesianPainter(
             layout: layout,
             kind: widget.kind,
@@ -205,7 +228,7 @@ class _DitherCartesianChartState extends State<DitherCartesianChart>
             reveal: reduced
                 ? 1
                 : Curves.easeInOutCubic.transform(_entrance.value),
-            idlePhase: reduced ? null : _idle.value,
+            idlePhase: reduced || !_idle.isAnimating ? null : _idle.value,
             hovered: visibleHover,
             hoveredSeries: _hoverSeries,
             selected: selected,
@@ -216,9 +239,7 @@ class _DitherCartesianChartState extends State<DitherCartesianChart>
             referenceLine: widget.referenceLine,
           );
           return MouseRegion(
-            onEnter: widget.interactive
-                ? (_) => setState(() => _pointerInside = true)
-                : null,
+            onEnter: widget.interactive ? (_) => _enter() : null,
             onExit: widget.interactive ? (_) => _clearHover() : null,
             child: Listener(
               behavior: HitTestBehavior.opaque,
@@ -240,7 +261,11 @@ class _DitherCartesianChartState extends State<DitherCartesianChart>
                 child: Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    CustomPaint(size: Size.infinite, painter: painter),
+                    CustomPaint(
+                      size: Size.infinite,
+                      painter: painter,
+                      willChange: _entrance.isAnimating || _idle.isAnimating,
+                    ),
                     if (widget.showTooltip &&
                         visibleHover != null &&
                         widget.data.isNotEmpty)
@@ -745,7 +770,26 @@ class _CartesianPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _CartesianPainter oldDelegate) => true;
+  bool shouldRepaint(covariant _CartesianPainter oldDelegate) {
+    return oldDelegate.layout.data != layout.data ||
+        oldDelegate.layout.series != layout.series ||
+        oldDelegate.layout.stackType != layout.stackType ||
+        oldDelegate.layout.min != layout.min ||
+        oldDelegate.layout.max != layout.max ||
+        oldDelegate.kind != kind ||
+        oldDelegate.showGrid != showGrid ||
+        oldDelegate.showAxes != showAxes ||
+        oldDelegate.reveal != reveal ||
+        oldDelegate.idlePhase != idlePhase ||
+        oldDelegate.hovered != hovered ||
+        oldDelegate.hoveredSeries != hoveredSeries ||
+        oldDelegate.selected != selected ||
+        oldDelegate.intensity != intensity ||
+        oldDelegate.bloom != bloom ||
+        oldDelegate.bloomOnHover != bloomOnHover ||
+        oldDelegate.pointerInside != pointerInside ||
+        oldDelegate.referenceLine != referenceLine;
+  }
 }
 
 class _CartesianLayout {

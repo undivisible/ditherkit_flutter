@@ -45,6 +45,7 @@ class DitherAreaChart extends StatelessWidget {
       animate: animate,
       replayKey: (Object.hashAll(values), replayToken),
       seriesLength: values.length,
+      idleAnimation: true,
       interactive: interactive,
       markerIndex: markerIndex,
       hovered: hovered,

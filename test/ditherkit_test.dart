@@ -199,6 +199,42 @@ void main() {
     expect(painter.reveal, 1);
   });
 
+  testWidgets('area charts idle only while hovered', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(body: DitherAreaChart(values: [1, 3, 2, 5, 4])),
+      ),
+    );
+    await tester.pump(const Duration(seconds: 1));
+    final resting =
+        tester
+                .widget<CustomPaint>(
+                  find.descendant(
+                    of: find.byType(DitherAreaChart),
+                    matching: find.byType(CustomPaint),
+                  ),
+                )
+                .painter
+            as DitherAreaPainter;
+    expect(resting.idlePhase, isNull);
+
+    final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    await gesture.addPointer(location: const Offset(0, 0));
+    await gesture.moveTo(const Offset(220, 60));
+    await tester.pump();
+    final active =
+        tester
+                .widget<CustomPaint>(
+                  find.descendant(
+                    of: find.byType(DitherAreaChart),
+                    matching: find.byType(CustomPaint),
+                  ),
+                )
+                .painter
+            as DitherAreaPainter;
+    expect(active.idlePhase, isNotNull);
+  });
+
   testWidgets('TickerMode pauses an inactive dither chart', (tester) async {
     await tester.pumpWidget(
       const TickerMode(
